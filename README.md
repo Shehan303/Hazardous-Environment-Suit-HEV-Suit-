@@ -96,7 +96,7 @@ We welcome contributions! Feel free to fork the repo, submit pull requests, or o
 ## 📨 Contact
 **Project Team** – H.E.V. Suit
 
-**Email**: yourteam@email.com (replace with your actual contact)
+**Email**: shehangap@gmail.com | manaharatd@gmail.com | minethdilshangunawardena2002@gmail.com | bhanuka.lakmal29@gmail.com
 
 ---
 

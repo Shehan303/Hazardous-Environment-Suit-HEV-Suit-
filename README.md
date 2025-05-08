@@ -30,7 +30,7 @@ It continuously monitors **health conditions** and **environmental threats**, in
 ---
 
 ## 🧹 Technologies Used
-- **Hardware**: Arduino Uno/Mega, NodeMCU ESP8266, DHT11, MPU6050, GPS Module, Pulse Sensor
+- **Hardware**: Arduino Uno/Mega, NodeMCU ESP8266, DHT11, MPU6050, GPS Module, Pulse Sensor,Custom Made Fracture Detection Layer
 - **Software**: Arduino IDE, Android Studio, Firebase Realtime Database
 - **Languages**: C/C++ (Microcontrollers), Java/Kotlin (Mobile App)
 

@@ -1,0 +1,91 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  background-color: #1e88e5;
+  color: white;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+header p {
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.heart-rate {
+  grid-row: span 3;
+  min-height: 500px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card i {
+  color: #1e88e5;
+  width: 24px;
+  height: 24px;
+}
+
+.card h2 {
+  font-size: 1.25rem;
+  margin: 0.75rem 0 0.5rem;
+  color: #444;
+}
+
+.card p {
+  font-size: 1rem;
+  margin: 0.25rem 0;
+}
+
+#bpmChart {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.875rem;
+  background-color: #e3f2fd;
+  color: #333;
+  margin-top: 2rem;
+}

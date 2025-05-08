@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HEV Suit Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    canvas {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>HEV Suit - Smart Safety Jacket</h1>
+    <p>Real-time Monitoring Dashboard</p>
+  </header>
+
+  <main class="dashboard">
+    <div class="card heart-rate">
+      <i data-feather="activity"></i>
+      <h2>Heart Rate</h2>
+      <p><span id="heartRate">--</span> bpm</p>
+      <canvas id="bpmChart" width="100%" height="200"></canvas>
+    </div>
+
+    <div class="card-container">
+      <div class="card temperature">
+        <i data-feather="thermometer"></i>
+        <h2>Temperature</h2>
+        <p><span id="temperature">--</span> °C</p>
+      </div>
+
+      <div class="card humidity">
+        <i data-feather="droplet"></i>
+        <h2>Humidity</h2>
+        <p><span id="humidity">--</span> %</p>
+      </div>
+
+      <div class="card tilt">
+        <i data-feather="compass"></i>
+        <h2>Tilt Sensor</h2>
+        <p>X: <span id="tiltX">--</span>°</p>
+        <p>Y: <span id="tiltY">--</span>°</p>
+        <p>Z: <span id="tiltZ">--</span>°</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 HEV Suit | Developed for Industrial Safety IoT Systems</p>
+  </footer>
+
+  <script>
+    feather.replace();
+
+    // Chart initialization
+    const ctx = document.getElementById('bpmChart').getContext('2d');
+    const bpmData = {
+      labels: [],
+      datasets: [{
+        label: 'BPM',
+        data: [],
+        borderColor: 'red',
+        backgroundColor: 'rgba(255,0,0,0.1)',
+        tension: 0.3,
+        fill: true
+      }]
+    };
+
+    const bpmChart = new Chart(ctx, {
+      type: 'line',
+      data: bpmData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Time'
+            }
+          },
+          y: {
+            min: 50,
+            max: 120,
+            title: {
+              display: true,
+              text: 'BPM'
+            },
+            ticks: {
+              stepSize: 10
+            }
+          }
+        },
+        animation: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        }
+      }
+    });
+
+    // Update values and chart
+    setInterval(() => {
+      const heartRate = Math.floor(60 + Math.random() * 40);
+      const temperature = (36 + Math.random() * 4).toFixed(1);
+      const humidity = (40 + Math.random() * 30).toFixed(1);
+      const tiltX = (Math.random() * 90).toFixed(1);
+      const tiltY = (Math.random() * 90).toFixed(1);
+      const tiltZ = (Math.random() * 90).toFixed(1);
+
+      document.getElementById("heartRate").textContent = heartRate;
+      document.getElementById("temperature").textContent = temperature;
+      document.getElementById("humidity").textContent = humidity;
+      document.getElementById("tiltX").textContent = tiltX;
+      document.getElementById("tiltY").textContent = tiltY;
+      document.getElementById("tiltZ").textContent = tiltZ;
+
+      const currentTime = new Date().toLocaleTimeString();
+      if (bpmChart.data.labels.length > 10) {
+        bpmChart.data.labels.shift();
+        bpmChart.data.datasets[0].data.shift();
+      }
+      bpmChart.data.labels.push(currentTime);
+      bpmChart.data.datasets[0].data.push(heartRate);
+      bpmChart.update();
+    }, 1000); // Changed from 20ms to 1000ms for more realistic updates
+  </script>
+</body>
+
+</html>

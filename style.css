@@ -1,0 +1,293 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #0a192f;
+    color: #e6f1ff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #112240;
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid #64ffda;
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: #64ffda;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #ccd6f6;
+    font-size: 1.1rem;
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.dashboard {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.jacket-view {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #112240;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.jacket {
+    position: relative;
+    width: 200px;
+    height: 400px;
+    margin: 2rem 0;
+}
+
+.jacket-part {
+    position: absolute;
+    transition: all 0.3s ease;
+}
+
+/* Jacket parts */
+.body {
+    width: 180px;
+    height: 280px;
+    background-color: #233554;
+    border-radius: 20px 20px 0 0;
+    top: 50px;
+    left: 10px;
+    z-index: 1;
+}
+
+.left-upper-arm {
+    width: 50px;
+    height: 100px;
+    background-color: #1e2a47;
+    border-radius: 10px;
+    top: 60px;
+    left: -40px;
+    transform: rotate(15deg);
+    z-index: 0;
+}
+
+.left-lower-arm {
+    width: 40px;
+    height: 120px;
+    background-color: #1e2a47;
+    border-radius: 10px;
+    top: 150px;
+    left: -50px;
+    transform: rotate(15deg);
+    z-index: 0;
+}
+
+.right-upper-arm {
+    width: 50px;
+    height: 100px;
+    background-color: #1e2a47;
+    border-radius: 10px;
+    top: 60px;
+    right: -40px;
+    transform: rotate(-15deg);
+    z-index: 0;
+}
+
+.right-lower-arm {
+    width: 40px;
+    height: 120px;
+    background-color: #1e2a47;
+    border-radius: 10px;
+    top: 150px;
+    right: -50px;
+    transform: rotate(-15deg);
+    z-index: 0;
+}
+
+.helmet {
+    width: 150px;
+    height: 120px;
+    background-color: #233554;
+    border-radius: 50% 50% 0 0;
+    top: 0;
+    left: 25px;
+    z-index: 2;
+}
+
+/* Damage states */
+.damage-critical {
+    background-color: #ff5555 !important;
+    box-shadow: 0 0 15px #ff5555;
+    animation: pulse-danger 1s infinite;
+}
+
+.damage-warning {
+    background-color: #ffaa33 !important;
+    box-shadow: 0 0 10px #ffaa33;
+    animation: pulse-warning 2s infinite;
+}
+
+.damage-safe {
+    background-color: #64ffda !important;
+}
+
+@keyframes pulse-danger {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse-warning {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    color: #ccd6f6;
+    font-size: 0.9rem;
+}
+
+select {
+    background-color: #233554;
+    color: #e6f1ff;
+    border: 1px solid #64ffda;
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.status-card {
+    background-color: #112240;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.status-card h3 {
+    color: #64ffda;
+    margin-bottom: 1rem;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #233554;
+}
+
+.status-label {
+    color: #ccd6f6;
+}
+
+.status-value {
+    font-weight: 500;
+}
+
+.critical {
+    color: #ff5555;
+}
+
+.warning {
+    color: #ffaa33;
+}
+
+.safe {
+    color: #64ffda;
+}
+
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #112240;
+    border-top: 2px solid #64ffda;
+    font-size: 0.9rem;
+    color: #8892b0;
+}
+
+.firebase-config {
+    background-color: #1e2a47;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.firebase-config h4 {
+    color: #64ffda;
+    margin-bottom: 0.5rem;
+}
+
+.firebase-config input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #233554;
+    border: 1px solid #64ffda;
+    color: #e6f1ff;
+    border-radius: 4px;
+}
+
+.firebase-config button {
+    background-color: #64ffda;
+    color: #0a192f;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.firebase-config button:hover {
+    background-color: #52d1b2;
+}

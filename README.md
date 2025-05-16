@@ -13,7 +13,6 @@ It continuously monitors **health conditions** and **environmental threats**, in
 - 📲 Send **emergency notifications** via **Firebase Cloud Messaging**.
 - 👷 Enhance worker safety and speed up emergency responses.
 
-
 ## 🛠️ Features
 - 🌡️ Temperature & Humidity Monitoring
 - ❤️ Heart Rate Sensing
@@ -24,12 +23,10 @@ It continuously monitors **health conditions** and **environmental threats**, in
 - ☁️ Cloud Database Integration (Firebase)
 - 📱 Mobile App Interface
 
-
 ## 🧹 Technologies Used
 - **Hardware**: Arduino Uno/Mega, NodeMCU ESP8266, DHT11, MPU6050, GPS Module, Pulse Sensor,Custom Made Fracture Detection Layer
 - **Software**: Arduino IDE, Android Studio, Firebase Realtime Database
 - **Languages**: C/C++ (Microcontrollers), Java/Kotlin (Mobile App)
-
 
 ## 🧑‍💻 Team Members
 - Sensor Integration & Testing 🔬
@@ -39,7 +36,6 @@ It continuously monitors **health conditions** and **environmental threats**, in
 - Prototype Assembly & Field Testing 🛠️
 
 > ✨ **4 team members** sharing tasks across both hardware and software aspects!
-
 
 ## 📅 Project Timeline
 | Week | Task |
@@ -53,7 +49,6 @@ It continuously monitors **health conditions** and **environmental threats**, in
 | 8 | Final prototype jacket assembly |
 | 9 | Testing, debugging, and evaluation |
 | 10 | Documentation and project finalization |
-
 
 ## 💰 Budget
 - The budget will be finalized after hardware component selection.
@@ -70,15 +65,12 @@ It continuously monitors **health conditions** and **environmental threats**, in
 - [Nature Research on Wearable Safety](https://www.nature.com/articles/s41598-024-78931-0)
 - [Guardhat Smart PPE Solutions](https://www.guardhat.com)
 
-
 ## 📸 Sneak Peek
 _(Add images, GIFs, or demo videos of your prototype suit and mobile app here!)_
 
-
 ## 🌟 Contribution
 We welcome contributions! Feel free to fork the repo, submit pull requests, or open issues. 💪
-
-
+[Shehan Chamuditha Gunasekara]
 ## 📨 Contact
 **Project Team** – H.E.V. Suit
 

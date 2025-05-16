@@ -1,13 +1,14 @@
+//Preprocessor Directives and Includes
 #define USE_ARDUINO_INTERRUPTS true
 
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
-#include <FirebaseClient.h>
-#include <DHT.h>
-#include <PulseSensorPlayground.h>
+#include <Arduino.h> // - Arduino core functions
+#include <ESP8266WiFi.h> // - ESP8266 Wifi Capability
+#include <WiFiClientSecure.h> // - Secure Wifi Client
+#include <FirebaseClient.h> // - Firebase Integration
+#include <DHT.h> // - DHT Sensor
+#include <PulseSensorPlayground.h> // - Pulse Sensor
 
-// WiFi and Firebase Credentials
+// WiFi and Firebase Credentials - Configuration Constants
 #define WIFI_SSID "OPPO F19"
 #define WIFI_PASSWORD "12345678"
 #define API_KEY "AIzaSyB24DNM3zDddY2hXr5RKByD64L8I_sx6Vc"
@@ -16,10 +17,12 @@
 #define USER_PASSWORD "heviot@123"
 
 // Sensor Pins and Setup
-#define DHTPIN D4
+// Humidity sensor on pin D4.
+#define DHTPIN D4 
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
 
+// Analog Pin A0 Used To Pulse Sensor
 const int PulseSensorPin = A0;
 PulseSensorPlayground pulseSensor;
 
@@ -33,12 +36,18 @@ AsyncClient aClient(sslClient);
 
 // Sensor Flags
 bool canTakePulse = true;
-bool canTakeTemp = false;  // Set true to enable temperature
-bool canTakeHum = false;   // Set true to enable humidity
+
+// Set true to enable temperature
+bool canTakeTemp = false;  
+
+// Set true to enable humidity
+bool canTakeHum = false;   
 
 // Timer
 unsigned long lastSendTime = 0;
-const unsigned long sendInterval = 10000;  // Adjust if needed
+
+// Adjust if needed
+const unsigned long sendInterval = 10000;  
 
 // Last sent values
 int lastSentPulse = -1;
@@ -59,6 +68,8 @@ void setup() {
   delay(500);
   Serial.println("System Start");
 
+  //Initializes serial communication for debugging.
+
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -69,15 +80,15 @@ void setup() {
   Serial.print("Connected with IP: ");
   Serial.println(WiFi.localIP());
 
-  // Initialize random seed
+  // Initialize random seed with Connects to WiFi network with retry logic.
   randomSeed(analogRead(A0));
 
-  // Configure SSL
+  // Configure SSL for initializes random number generator for fallback pulse values
   sslClient.setInsecure();
   sslClient.setTimeout(1000);
   sslClient.setBufferSizes(4096, 1024);
 
-  // Initialize Firebase
+  // Initialize Firebase - testing mode
   initializeApp(aClient, app, getAuth(userAuth), processData, "authTask");
   app.getApp<RealtimeDatabase>(database);
   database.url(DATABASE_URL);

@@ -16,6 +16,8 @@
 #define USER_PASSWORD "heviot@123"
 
 // Sensor Pins and Setup
+#define LOWER_ARM_PIN D1
+#define TILT_PIN D5
 #define DHTPIN D4
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
@@ -33,17 +35,22 @@ AsyncClient aClient(sslClient);
 
 // Sensor Flags
 bool canTakePulse = true;
-bool canTakeTemp = false;  // Set true to enable temperature
-bool canTakeHum = false;   // Set true to enable humidity
+bool canTakeTemp = true;       // Set true to enable temperature
+bool canTakeHum = true;       // Set true to enable humidity
+bool canTakeTilt = true;      // Set true to enable humidity
+bool canDitectDamage = true;  // Set true to enable humidity
+
+
 
 // Timer
 unsigned long lastSendTime = 0;
-const unsigned long sendInterval = 10000;  // Adjust if needed
+const unsigned long sendInterval = 5000;  // Adjust if needed
 
 // Last sent values
 int lastSentPulse = -1;
 float lastSentTemp = -1000;
 float lastSentHum = -1000;
+bool lastSentTilt = false;
 
 // Last valid BPM
 int lastValidBPM = 0;
@@ -86,47 +93,72 @@ void setup() {
   dht.begin();
   pulseSensor.analogInput(PulseSensorPin);
   pulseSensor.setThreshold(550);
+  pinMode(TILT_PIN, INPUT);
+  pinMode(LOWER_ARM_PIN,INPUT);
   pulseSensor.begin();
   delay(750);
   Serial.println("Pulse Sensor Ready");
 }
 
 void loop() {
-  app.loop();
 
-  if (app.ready()) {
-    unsigned long currentTime = millis();
-    if (currentTime - lastSendTime >= sendInterval) {
-      lastSendTime = currentTime;
+  if (WiFi.status() == WL_CONNECTED) {
+    app.loop();  // Keep Firebase async system running
 
-      if (canTakePulse) {
-        int pulse = GetHeartPulse();
-        lastSentPulse = pulse;
-        database.set<int>(aClient, "/sensor/heartPulse", pulse, processData, "sendPulse");
-        Serial.print("Sent Pulse: ");
-        Serial.println(pulse);
+    if (!app.ready()) {
+      reconnectFirebase();  // Firebase not ready? Reconnect it
+      return;
+    } else {
+      unsigned long currentTime = millis();
+      if (currentTime - lastSendTime >= sendInterval) {
+        lastSendTime = currentTime;
+
+        if (canTakePulse) {
+          int pulse = GetHeartPulse();
+          lastSentPulse = pulse;
+          database.set<int>(aClient, "/sensor/heartPulse", pulse, processData, "sendPulse");
+          Serial.print("Sent Pulse: ");
+          Serial.println(pulse);
+        }
+
+        if (canTakeTemp) {
+          float temp = GetTemp();
+          lastSentTemp = temp;
+          database.set<float>(aClient, "/sensor/temperature", temp, processData, "sendTemp");
+        }
+
+        if (canTakeHum) {
+          float hum = GetHumidity();
+          lastSentHum = hum;
+          database.set<float>(aClient, "/sensor/humidity", hum, processData, "sendHum");
+        }
+
+        if (canTakeTilt) {
+          bool tiltVal = GetTilt();
+          lastSentTilt = tiltVal;
+          database.set<bool>(aClient, "/sensor/tiltVal", tiltVal, processData, "sendTilt");
+        }
+
+        if (canDitectDamage) {
+          bool IsLowerArmDamaged =  GetDamageLowerArmDamage();
+          database.set<bool>(aClient, "/sensor/Lower_Arm_Damaged", IsLowerArmDamaged, processData, "sendIsArm_Damaged");
+        }
+
+        // Debug memory
+        Serial.print("Free heap: ");
+        Serial.println(ESP.getFreeHeap());
       }
-
-      if (canTakeTemp) {
-        float temp = GetTemp();
-        lastSentTemp = temp;
-        database.set<float>(aClient, "/sensor/temperature", temp, processData, "sendTemp");
-      }
-
-      if (canTakeHum) {
-        float hum = GetHumidity();
-        lastSentHum = hum;
-        database.set<float>(aClient, "/sensor/humidity", hum, processData, "sendHum");
-      }
-
-      // Debug memory
-      Serial.print("Free heap: ");
-      Serial.println(ESP.getFreeHeap());
     }
-  }
 
-  yield();  // Avoid blocking async and WiFi tasks
+    yield();
+  } else {
+    Serial.println("❌ WiFi disconnected. Reconnecting...");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    delay(500);
+  }
 }
+
+
 
 // ------------------- Sensor Functions -------------------
 
@@ -168,6 +200,18 @@ int GetHeartPulse() {
   return lastValidBPM;
 }
 
+bool GetTilt() {
+  return digitalRead(TILT_PIN);
+}
+
+bool GetDamageLowerArmDamage() {
+  return digitalRead(LOWER_ARM_PIN);
+}
+
+
+
+
+
 // ------------------- Firebase Async Callback -------------------
 
 void processData(AsyncResult &aResult) {
@@ -199,4 +243,13 @@ void processData(AsyncResult &aResult) {
                     aResult.uid().c_str(),
                     aResult.c_str());
   }
+}
+
+//reconnect to Fire base
+
+void reconnectFirebase() {
+  Serial.println("🔁 Attempting to reconnect to Firebase...");
+  initializeApp(aClient, app, getAuth(userAuth), processData, "reAuthTask");
+  app.getApp<RealtimeDatabase>(database);
+  database.url(DATABASE_URL);
 }

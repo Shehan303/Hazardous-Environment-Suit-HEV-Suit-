@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HEV Suit Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --primary: #1e88e5;
+      --primary-light: #e3f2fd;
+      --danger: #e53935;
+      --warning: #fb8c00;
+      --success: #43a047;
+      --gray: #f5f5f5;
+      --dark-gray: #757575;
+      --white: #ffffff;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: var(--primary);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .header-left h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .header-left p {
+      font-size: 0.875rem;
+      opacity: 0.9;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--success);
+    }
+
+    .status-dot.offline {
+      background-color: var(--danger);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .card {
+      background-color: var(--white);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #444;
+    }
+
+    .card-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--primary);
+    }
+
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .card-unit {
+      font-size: 1rem;
+      color: var(--dark-gray);
+      margin-left: 0.25rem;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 250px;
+      margin-top: 1rem;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .alert-danger {
+      background-color: rgba(229, 57, 53, 0.1);
+      border-left: 4px solid var(--danger);
+    }
+
+    .alert-warning {
+      background-color: rgba(251, 140, 0, 0.1);
+      border-left: 4px solid var(--warning);
+    }
+
+    .alert-icon {
+      font-size: 1.5rem;
+      color: var(--danger);
+    }
+
+    .alert-warning .alert-icon {
+      color: var(--warning);
+    }
+
+    .alert-content h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .alert-content p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+
+    .grid-col-2 {
+      grid-column: span 2;
+    }
+
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .sensor-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background-color: var(--gray);
+      border-radius: 8px;
+    }
+
+    .sensor-name {
+      font-weight: 500;
+    }
+
+    .sensor-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background-color: rgba(67, 160, 71, 0.1);
+      color: var(--success);
+    }
+
+    .status-inactive {
+      background-color: rgba(117, 117, 117, 0.1);
+      color: var(--dark-gray);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(26px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.875rem;
+      background-color: var(--primary-light);
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+
+      .grid-col-2 {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-left">
+      <h1>HEV Suit Admin Dashboard</h1>
+      <p>Real-time monitoring and control</p>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator">
+        <div class="status-dot" id="connectionStatus"></div>
+        <span id="connectionText">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <!-- Alerts Section -->
+    <div class="card grid-col-2">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-exclamation-triangle card-icon"></i>
+          Alerts
+        </h2>
+      </div>
+      <div id="alertsContainer">
+        <!-- Alerts will be dynamically inserted here -->
+      </div>
+    </div>
+
+    <!-- Heart Rate Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-heartbeat card-icon"></i>
+          Heart Rate
+        </h2>
+        <label class="toggle-switch">
+          <input type="checkbox" id="togglePulse" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="card-value">
+        <span id="heartRate">--</span>
+        <span class="card-unit">bpm</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="bpmChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Temperature Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-thermometer-half card-icon"></i>
+          Temperature
+        </h2>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleTemp" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="card-value">
+        <span id="temperature">--</span>
+        <span class="card-unit">°C</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="tempChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Humidity Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-tint card-icon"></i>
+          Humidity
+        </h2>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleHum" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="card-value">
+        <span id="humidity">--</span>
+        <span class="card-unit">%</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="humidityChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Tilt & Damage Status -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-arrows-alt card-icon"></i>
+          Tilt Status
+        </h2>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleTilt" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          <span class="sensor-name">Tilt Detected</span>
+          <span class="sensor-status" id="tiltStatus">No</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Arm Damage</span>
+          <span class="sensor-status" id="armDamageStatus">No</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sensor Controls -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="fas fa-sliders-h card-icon"></i>
+          Sensor Controls
+        </h2>
+      </div>
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          <span class="sensor-name">Pulse Sensor</span>
+          <span class="sensor-status" id="pulseSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Temperature Sensor</span>
+          <span class="sensor-status" id="tempSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Humidity Sensor</span>
+          <span class="sensor-status" id="humSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Tilt Sensor</span>
+          <span class="sensor-status" id="tiltSensorStatus">Active</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 HEV Suit Monitoring System | Developed for Industrial Safety IoT Applications</p>
+  </footer>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB24DNM3zDddY2hXr5RKByD64L8I_sx6Vc",
+      databaseURL: "https://hev-iot-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "hev-iot-system",
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Chart configurations
+    const chartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 0
+      },
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 6
+          }
+        },
+        y: {
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        }
+      },
+      elements: {
+        point: {
+          radius: 0
+        }
+      }
+    };
+
+    // Initialize charts
+    const bpmCtx = document.getElementById('bpmChart').getContext('2d');
+    const bpmChart = new Chart(bpmCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'BPM',
+          data: [],
+          borderColor: '#e53935',
+          backgroundColor: 'rgba(229, 57, 53, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        ...chartOptions,
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            min: 50,
+            max: 120
+          }
+        }
+      }
+    });
+
+    const tempCtx = document.getElementById('tempChart').getContext('2d');
+    const tempChart = new Chart(tempCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Temperature',
+          data: [],
+          borderColor: '#1e88e5',
+          backgroundColor: 'rgba(30, 136, 229, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        ...chartOptions,
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            min: 20,
+            max: 40
+          }
+        }
+      }
+    });
+
+    const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+    const humidityChart = new Chart(humidityCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Humidity',
+          data: [],
+          borderColor: '#43a047',
+          backgroundColor: 'rgba(67, 160, 71, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        ...chartOptions,
+        scales: {
+          ...chartOptions.scales,
+          y: {
+            ...chartOptions.scales.y,
+            min: 30,
+            max: 80
+          }
+        }
+      }
+    });
+
+    // Data storage for charts
+    const maxDataPoints = 20;
+    const chartData = {
+      bpm: [],
+      temp: [],
+      humidity: [],
+      timestamps: []
+    };
+
+    // Firebase references
+    const heartRateRef = database.ref('sensor/heartPulse');
+    const tempRef = database.ref('sensor/temperature');
+    const humidityRef = database.ref('sensor/humidity');
+    const tiltRef = database.ref('sensor/tiltVal');
+    const damageRef = database.ref('sensor/Lower_Arm_Damaged');
+
+    // Toggle switches
+    const togglePulse = document.getElementById('togglePulse');
+    const toggleTemp = document.getElementById('toggleTemp');
+    const toggleHum = document.getElementById('toggleHum');
+    const toggleTilt = document.getElementById('toggleTilt');
+
+    // Status indicators
+    const connectionStatus = document.getElementById('connectionStatus');
+    const connectionText = document.getElementById('connectionText');
+    const pulseSensorStatus = document.getElementById('pulseSensorStatus');
+    const tempSensorStatus = document.getElementById('tempSensorStatus');
+    const humSensorStatus = document.getElementById('humSensorStatus');
+    const tiltSensorStatus = document.getElementById('tiltSensorStatus');
+    const tiltStatus = document.getElementById('tiltStatus');
+    const armDamageStatus = document.getElementById('armDamageStatus');
+
+    // Listen for connection status changes
+    database.ref('.info/connected').on('value', (snapshot) => {
+      if (snapshot.val() === true) {
+        connectionStatus.className = 'status-dot';
+        connectionText.textContent = 'Connected';
+      } else {
+        connectionStatus.className = 'status-dot offline';
+        connectionText.textContent = 'Disconnected';
+      }
+    });
+
+    // Listen for heart rate changes
+    heartRateRef.on('value', (snapshot) => {
+      const bpm = snapshot.val();
+      if (bpm !== null && togglePulse.checked) {
+        document.getElementById('heartRate').textContent = bpm;
+        updateChart('bpm', bpm, bpmChart);
+        checkBPMAlerts(bpm);
+      }
+    });
+
+    // Listen for temperature changes
+    tempRef.on('value', (snapshot) => {
+      const temp = snapshot.val();
+      if (temp !== null && temp !== -1000 && toggleTemp.checked) {
+        document.getElementById('temperature').textContent = temp.toFixed(1);
+        updateChart('temp', temp, tempChart);
+        checkTempAlerts(temp);
+      }
+    });
+
+    // Listen for humidity changes
+    humidityRef.on('value', (snapshot) => {
+      const hum = snapshot.val();
+      if (hum !== null && hum !== -1.0 && toggleHum.checked) {
+        document.getElementById('humidity').textContent = hum.toFixed(1);
+        updateChart('humidity', hum, humidityChart);
+      }
+    });
+
+    // Listen for tilt changes
+    tiltRef.on('value', (snapshot) => {
+      const tilt = snapshot.val();
+      if (tilt !== null && toggleTilt.checked) {
+        tiltStatus.textContent = tilt ? 'Yes' : 'No';
+        tiltStatus.className = tilt ? 'sensor-status status-active' : 'sensor-status status-inactive';
+        if (tilt) {
+          addAlert('Tilt Detected', 'The suit has been tilted significantly. Check if the wearer has fallen.', 'warning');
+        }
+      }
+    });
+
+    // Listen for damage changes
+    damageRef.on('value', (snapshot) => {
+      const damaged = snapshot.val();
+      if (damaged !== null) {
+        armDamageStatus.textContent = damaged ? 'Yes' : 'No';
+        armDamageStatus.className = damaged ? 'sensor-status status-active' : 'sensor-status status-inactive';
+        if (damaged) {
+          addAlert('Arm Damage Detected', 'The lower arm component has been damaged. Immediate maintenance required.', 'danger');
+        }
+      }
+    });
+
+    // Update chart data
+    function updateChart(type, value, chart) {
+      const now = new Date();
+      const timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+      
+      chartData[type].push(value);
+      chartData.timestamps.push(timeLabel);
+      
+      if (chartData[type].length > maxDataPoints) {
+        chartData[type].shift();
+        chartData.timestamps.shift();
+      }
+      
+      chart.data.labels = chartData.timestamps;
+      chart.data.datasets[0].data = chartData[type];
+      chart.update();
+    }
+
+    // Alert functions
+    function addAlert(title, message, type) {
+      const alertsContainer = document.getElementById('alertsContainer');
+      const alertId = 'alert-' + Date.now();
+      
+      // Check if this alert already exists
+      if (document.getElementById(alertId)) return;
+      
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.id = alertId;
+      alertDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle alert-icon"></i>
+        <div class="alert-content">
+          <h4>${title}</h4>
+          <p>${message}</p>
+        </div>
+        <button onclick="removeAlert('${alertId}')" style="background: none; border: none; cursor: pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      alertsContainer.insertBefore(alertDiv, alertsContainer.firstChild);
+      
+      // Auto-remove after 30 seconds
+      setTimeout(() => {
+        removeAlert(alertId);
+      }, 30000);
+    }
+
+    function removeAlert(id) {
+      const alert = document.getElementById(id);
+      if (alert) {
+        alert.style.opacity = '0';
+        setTimeout(() => {
+          alert.remove();
+        }, 300);
+      }
+    }
+
+    // Make removeAlert available globally
+    window.removeAlert = removeAlert;
+
+    // Alert checking functions
+    function checkBPMAlerts(bpm) {
+      if (bpm > 100) {
+        addAlert('High Heart Rate', `Heart rate is elevated (${bpm} bpm). The wearer may be in distress.`, 'danger');
+      } else if (bpm < 50) {
+        addAlert('Low Heart Rate', `Heart rate is unusually low (${bpm} bpm). Check the wearer's condition.`, 'danger');
+      }
+    }
+
+    function checkTempAlerts(temp) {
+      if (temp > 38) {
+        addAlert('High Temperature', `Suit temperature is high (${temp.toFixed(1)}°C). Risk of overheating.`, 'warning');
+      } else if (temp < 20) {
+        addAlert('Low Temperature', `Suit temperature is low (${temp.toFixed(1)}°C). Check environment.`, 'warning');
+      }
+    }
+
+    // Toggle switch event listeners
+    togglePulse.addEventListener('change', function() {
+      pulseSensorStatus.textContent = this.checked ? 'Active' : 'Inactive';
+      pulseSensorStatus.className = this.checked ? 'sensor-status status-active' : 'sensor-status status-inactive';
+    });
+
+    toggleTemp.addEventListener('change', function() {
+      tempSensorStatus.textContent = this.checked ? 'Active' : 'Inactive';
+      tempSensorStatus.className = this.checked ? 'sensor-status status-active' : 'sensor-status status-inactive';
+    });
+
+    toggleHum.addEventListener('change', function() {
+      humSensorStatus.textContent = this.checked ? 'Active' : 'Inactive';
+      humSensorStatus.className = this.checked ? 'sensor-status status-active' : 'sensor-status status-inactive';
+    });
+
+    toggleTilt.addEventListener('change', function() {
+      tiltSensorStatus.textContent = this.checked ? 'Active' : 'Inactive';
+      tiltSensorStatus.className = this.checked ? 'sensor-status status-active' : 'sensor-status status-inactive';
+    });
+  </script>
+</body>
+
+</html>

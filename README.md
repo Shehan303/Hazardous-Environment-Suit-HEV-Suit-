@@ -8,7 +8,7 @@ It continuously monitors **health conditions** and **environmental threats**, in
 
 ## 🎯 Objectives
 - 🧠 Monitor **body temperature**, **heart rate**, **humidity**, **falls**, and **injuries**.
-- 🛠️ Detect hazardous conditions and trigger immediate alerts.
+- 🛠️ Detect hazardous conditions and trigger immediate alertsfoe the admins.
 - 🔎 Enable **GPS-based tracking** for real-time worker location monitoring.
 - 📲 Send **emergency notifications** via **Firebase Cloud Messaging**.
 - 👷 Enhance worker safety and speed up emergency responses.

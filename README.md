@@ -21,7 +21,7 @@ It continuously monitors **health conditions** and **environmental threats**, in
 - 🚨 Emergency Buzzer Alert
 - 🩸 Bleeding and Bruise Detection (Experimental)
 - ☁️ Cloud Database Integration (Firebase)
-- 📱 Mobile App Interface
+- 📱 Web Interface
 
 ## 🧹 Technologies Used
 - **Hardware**: Arduino Uno/Mega, NodeMCU ESP8266, DHT11, MPU6050, GPS Module, Pulse Sensor,Custom Made Fracture Detection Layer
@@ -31,7 +31,7 @@ It continuously monitors **health conditions** and **environmental threats**, in
 ## 🧑‍💻 Team Members
 - Sensor Integration & Testing 🔬
 - Firmware Development ⚙️
-- Mobile App Development 📱
+- Web Application Developmment 📱
 - Cloud Backend Setup 🔥
 - Prototype Assembly & Field Testing 🛠️
 

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H.E.V. Suit - Firebase Integration</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+
+<body>
+    <header>
+        <h1>H.E.V. SUIT</h1>
+        <p class="subtitle">Firebase Realtime Monitoring System</p>
+        <div class="status-indicator">
+            <div class="status-dot" id="connectionStatus"></div>
+            <span id="connectionText">Connecting...</span>
+        </div>
+        <div class="header-actions">
+            <button class="action-button" id="downloadBtn">
+                <i class="fas fa-download"></i> Download Report
+            </button>
+            <button class="action-button" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="action-button btn-danger" id="emergencyBtn">
+                <i class="fas fa-bell"></i> Emergency Alert
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="firebase-config">
+                <h4>Firebase Configuration</h4>
+                <input type="text" id="apiKey" placeholder="API Key">
+                <input type="text" id="authDomain" placeholder="Auth Domain">
+                <input type="text" id="databaseURL" placeholder="Database URL">
+                <input type="text" id="projectId" placeholder="Project ID">
+                <button id="initFirebase">Initialize Firebase</button>
+                <div id="firebaseStatus" class="status-value safe">Not connected</div>
+            </div>
+
+            <div class="chart-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Alerts</h3>
+                <div id="alertsContainer">
+                    <!-- Alerts will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-heartbeat"></i> Heart Rate</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePulse" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Current</span>
+                    <span class="status-value" id="heart-rate">-- bpm</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="bpmChart"></canvas>
+                </div>
+                <div class="data-log-panel" id="bpmLog"></div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-thermometer-half"></i> Body Temp</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleTemp" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Current</span>
+                    <span class="status-value" id="body-temp">-- °C</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+                <div class="data-log-panel" id="tempLog"></div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-tint"></i> Humidity</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleHum" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Current</span>
+                    <span class="status-value" id="humidity">-- %</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="humidityChart"></canvas>
+                </div>
+                <div class="data-log-panel" id="humidityLog"></div>
+            </div>
+
+            <div class="status-card">
+                <h3>DAMAGE REPORT</h3>
+                <div class="status-item">
+                    <span class="status-label">Torso</span>
+                    <span class="status-value safe" id="torso-status">Nominal</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Left Arm</span>
+                    <span class="status-value safe" id="left-arm-status">Nominal</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Right Arm</span>
+                    <span class="status-value safe" id="right-arm-status">Nominal</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">System Integrity</span>
+                    <span class="status-value safe" id="system-status">100%</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-arrows-alt"></i> Tilt Status</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleTilt" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="sensor-grid">
+                    <div class="sensor-item">
+                        <span class="sensor-name">Tilt Detected</span>
+                        <span class="sensor-status status-inactive" id="tiltStatus">No</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="sensor-name">Arm Damage</span>
+                        <span class="sensor-status status-inactive" id="armDamageStatus">No</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3><i class="fas fa-sliders-h"></i> Sensor Controls</h3>
+                <div class="sensor-grid">
+                    <div class="sensor-item">
+                        <span class="sensor-name">Pulse Sensor</span>
+                        <span class="sensor-status status-active" id="pulseSensorStatus">Active</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="sensor-name">Temp Sensor</span>
+                        <span class="sensor-status status-active" id="tempSensorStatus">Active</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="sensor-name">Humidity Sensor</span>
+                        <span class="sensor-status status-active" id="humSensorStatus">Active</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="sensor-name">Tilt Sensor</span>
+                        <span class="sensor-status status-active" id="tiltSensorStatus">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3>ENVIRONMENTAL DATA</h3>
+                <div class="status-item">
+                    <span class="status-label">External Temp</span>
+                    <span class="status-value" id="ext-temp">-- °C</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Air Quality</span>
+                    <span class="status-value safe" id="air-quality">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Toxic Gas</span>
+                    <span class="status-value safe" id="toxic-gas">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">GPS Location</span>
+                    <span class="status-value" id="gps-location">--</span>
+                    <button class="gps-btn" id="showMapBtn" title="Show on Map">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </button>
+                    <button class="gps-btn" id="showHistoryBtn" title="Show History">
+                        <i class="fas fa-history"></i>
+                    </button>
+                </div>
+                <div id="mapContainer" style="display: none; height: 200px; margin-top: 1rem;">
+                    <div id="map" style="height: 100%;"></div>
+                </div>
+                <div id="gpsHistoryPanel" class="data-log-panel" style="display: none;"></div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="jacket-view">
+        <h2>SUIT INTEGRITY VISUALIZATION</h2>
+        <div class="jacket">
+            <div class="jacket-part helmet" id="helmet"></div>
+            <div class="jacket-part body" id="body"></div>
+            <div class="jacket-part left-upper-arm" id="left-upper-arm"></div>
+            <div class="jacket-part left-lower-arm" id="left-lower-arm"></div>
+            <div class="jacket-part right-upper-arm" id="right-upper-arm"></div>
+            <div class="jacket-part right-lower-arm" id="right-lower-arm"></div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Current Damage State:</label>
+                <div id="current-damage" class="status-value safe">No damage detected</div>
+            </div>
+            <button id="testDataBtn" class="action-button">
+                Push Test Data
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <footer>
+        © 2025 H.E.V. Suit System | Hazardous Environment Protection Technology
+    </footer>
+
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

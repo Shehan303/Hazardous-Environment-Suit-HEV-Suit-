@@ -2,1425 +2,1830 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H.E.V. Suit - Firebase Integration</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-    <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: "Roboto", sans-serif;
-          background-color: #0a192f;
-          color: #e6f1ff;
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-        }
-
-        .user-selection {
-          background-color: #112240;
-          padding: 1rem;
-          margin: 0 2rem;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          justify-content: center;
-          border-bottom: 2px solid #64ffda;
-        }
-
-        .user-selection label {
-          color: #64ffda;
-          font-weight: 500;
-        }
-
-        .user-selection select {
-          background-color: #233554;
-          color: #e6f1ff;
-          border: 1px solid #64ffda;
-          padding: 0.5rem;
-          border-radius: 5px;
-          min-width: 150px;
-        }
-
-        #mapContainer {
-          height: 400px;
-          margin-top: 1rem;
-          border-radius: 8px;
-          overflow: hidden;
-          border: 1px solid #233554;
-        }
-
-        .leaflet-container {
-          background-color: #0a192f !important;
-        }
-
-        #mapContainer { 
-            height: 500px;
-            width: 100%;
-            border-radius: 8px;
-            margin-top: 1rem;
-            display: none; /* Start hidden */
-        }
-
-        .mapboxgl-popup {
-            max-width: 200px;
-        }
-
-        .mapboxgl-popup-content {
-            background-color: #112240;
-            color: #e6f1ff;
-            font-family: 'Roboto', sans-serif;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .user-selection form {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          width: 100%;
-        }
-
-        .user-selection select {
-          background-color: #233554;
-          color: #e6f1ff;
-          border: 1px solid #64ffda;
-          padding: 0.5rem;
-          border-radius: 5px;
-          min-width: 150px;
-          cursor: pointer;
-        }
-
-        .user-selection button[type="submit"] {
-          margin: 0;
-        }
-
-        .mapboxgl-popup-close-button {
-            color: #e6f1ff;
-            font-size: 1.5rem;
-            padding: 0 5px;
-        }
-
-        .mapboxgl-ctrl-group {
-            background-color: #112240;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .mapboxgl-ctrl-icon {
-            filter: invert(1) brightness(0.8);
-        }
-
-        .leaflet-control {
-          background-color: #112240 !important;
-          color: #e6f1ff !important;
-        }
-
-        .leaflet-bar a {
-          color: #e6f1ff !important;
-          background-color: #112240 !important;
-          border-bottom: 1px solid #233554 !important;
-        }
-
-        .leaflet-bar a:hover {
-          background-color: #1e2a47 !important;
-        }
-
-        header {
-          background-color: #112240;
-          padding: 1.5rem;
-          text-align: center;
-          border-bottom: 2px solid #64ffda;
-          position: relative;
-        }
-
-        h1 {
-          font-family: "Orbitron", sans-serif;
-          color: #64ffda;
-          margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-          color: #ccd6f6;
-          font-size: 1.1rem;
-        }
-
-        .container {
-          display: relative;
-          flex: 1;
-          padding: 2rem;
-          gap: 2rem;
-          flex-wrap: wrap;
-        }
-
-        .dashboard {
-          flex: 1;
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 1.5rem;
-          min-width: 600px;
-        }
-
-        .jacket-view {
-          width: 400px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          background-color: #112240;
-          padding: 2rem;
-          border-radius: 10px;
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .jacket {
-          position: relative;
-          width: 200px;
-          height: 400px;
-          margin: 2rem 0;
-        }
-
-        .jacket-part {
-          position: absolute;
-          transition: all 0.3s ease;
-        }
-
-        /* Jacket parts */
-        .body {
-          width: 180px;
-          height: 280px;
-          background-color: #233554;
-          border-radius: 20px 20px 0 0;
-          top: 50px;
-          left: 10px;
-          z-index: 1;
-        }
-
-        .left-upper-arm {
-          width: 50px;
-          height: 100px;
-          background-color: #1e2a47;
-          border-radius: 10px;
-          top: 60px;
-          left: -40px;
-          transform: rotate(15deg);
-          z-index: 0;
-        }
-
-        .left-lower-arm {
-          width: 40px;
-          height: 120px;
-          background-color: #1e2a47;
-          border-radius: 10px;
-          top: 150px;
-          left: -50px;
-          transform: rotate(15deg);
-          z-index: 0;
-        }
-
-        .right-upper-arm {
-          width: 50px;
-          height: 100px;
-          background-color: #1e2a47;
-          border-radius: 10px;
-          top: 60px;
-          right: -40px;
-          transform: rotate(-15deg);
-          z-index: 0;
-        }
-
-        .right-lower-arm {
-          width: 40px;
-          height: 120px;
-          background-color: #1e2a47;
-          border-radius: 10px;
-          top: 150px;
-          right: -50px;
-          transform: rotate(-15deg);
-          z-index: 0;
-        }
-
-        .helmet {
-          width: 150px;
-          height: 120px;
-          background-color: #233554;
-          border-radius: 50% 50% 0 0;
-          top: 0;
-          left: 25px;
-          z-index: 2;
-        }
-
-        /* Damage states */
-        .damage-critical {
-          background-color: #ff5555 !important;
-          box-shadow: 0 0 15px #ff5555;
-          animation: pulse-danger 1s infinite;
-        }
-
-        .damage-warning {
-          background-color: #ffaa33 !important;
-          box-shadow: 0 0 10px #ffaa33;
-          animation: pulse-warning 2s infinite;
-        }
-
-        .damage-safe {
-          background-color: #64ffda !important;
-        }
-
-        @keyframes pulse-danger {
-          0% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.7;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-
-        @keyframes pulse-warning {
-          0% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.8;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-
-        .controls {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          width: 100%;
-        }
-
-        .control-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        label {
-          color: #ccd6f6;
-          font-size: 0.9rem;
-        }
-
-        select {
-          background-color: #233554;
-          color: #e6f1ff;
-          border: 1px solid #64ffda;
-          padding: 0.5rem;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-
-        .status-card {
-          background-color: #112240;
-          padding: 1.5rem;
-          border-radius: 10px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .status-card h3 {
-          color: #64ffda;
-          margin-bottom: 1rem;
-          font-family: "Orbitron", sans-serif;
-        }
-
-        .status-item {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 0.5rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #233554;
-        }
-
-        .status-label {
-          color: #ccd6f6;
-        }
-
-        .status-value {
-          font-weight: 500;
-        }
-
-        .critical {
-          color: #ff5555;
-        }
-
-        .warning {
-          color: #ffaa33;
-        }
-
-        .safe {
-          color: #64ffda;
-        }
-
-        footer {
-          text-align: center;
-          padding: 1.5rem;
-          background-color: #112240;
-          border-top: 2px solid #64ffda;
-          font-size: 0.9rem;
-          color: #8892b0;
-        }
-
-        .firebase-config {
-          background-color: #1e2a47;
-          padding: 1rem;
-          border-radius: 8px;
-          margin-bottom: 1rem;
-        }
-
-        .firebase-config h4 {
-          color: #64ffda;
-          margin-bottom: 0.5rem;
-        }
-
-        .firebase-config input {
-          width: 100%;
-          padding: 0.5rem;
-          margin-bottom: 0.5rem;
-          background-color: #233554;
-          border: 1px solid #64ffda;
-          color: #e6f1ff;
-          border-radius: 4px;
-        }
-
-        .firebase-config button {
-          background-color: #64ffda;
-          color: #0a192f;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 4px;
-          cursor: pointer;
-          font-weight: bold;
-          transition: background-color 0.3s;
-        }
-
-        .firebase-config button:hover {
-          background-color: #52d1b2;
-        }
-
-        /* New styles for charts and alerts */
-        .chart-card {
-          background-color: #112240;
-          padding: 1.5rem;
-          border-radius: 10px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-          grid-column: span 2;
-        }
-
-        .chart-card h3 {
-          color: #64ffda;
-          margin-bottom: 1rem;
-          font-family: "Orbitron", sans-serif;
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .chart-card h3 i {
-          font-size: 1.25rem;
-        }
-
-        .chart-container {
-          width: 100%;
-          height: 200px;
-          margin-top: 1rem;
-        }
-
-        .card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-
-        .toggle-switch {
-          position: relative;
-          display: inline-block;
-          width: 50px;
-          height: 24px;
-        }
-
-        .toggle-switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #233554;
-          transition: 0.4s;
-          border-radius: 24px;
-          border: 1px solid #64ffda;
-        }
-
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 4px;
-          bottom: 4px;
-          background-color: #64ffda;
-          transition: 0.4s;
-          border-radius: 50%;
-        }
-
-        input:checked + .slider {
-          background-color: #112240;
-        }
-
-        input:checked + .slider:before {
-          transform: translateX(26px);
-        }
-
-        .alert {
-          padding: 1rem;
-          border-radius: 8px;
-          margin-bottom: 1rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          background-color: rgba(30, 42, 71, 0.8);
-          border-left: 4px solid #64ffda;
-        }
-
-        .alert-danger {
-          border-left-color: #ff5555;
-        }
-
-        .alert-warning {
-          border-left-color: #ffaa33;
-        }
-
-        .alert-icon {
-          font-size: 1.5rem;
-          color: #ff5555;
-        }
-
-        .alert-warning .alert-icon {
-          color: #ffaa33;
-        }
-
-        .alert-safe .alert-icon {
-          color: #64ffda;
-        }
-
-        .alert-content h4 {
-          font-weight: 600;
-          margin-bottom: 0.25rem;
-          color: #e6f1ff;
-        }
-
-        .alert-content p {
-          font-size: 0.875rem;
-          opacity: 0.8;
-          color: #ccd6f6;
-        }
-
-        .sensor-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-        }
-
-        .sensor-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.75rem 1rem;
-          background-color: #1e2a47;
-          border-radius: 8px;
-          border: 1px solid #233554;
-        }
-
-        .sensor-name {
-          font-weight: 500;
-          color: #ccd6f6;
-        }
-
-        .sensor-status {
-          padding: 0.25rem 0.5rem;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-
-        .status-active {
-          background-color: rgba(100, 255, 218, 0.1);
-          color: #64ffda;
-        }
-
-        .status-inactive {
-          background-color: rgba(117, 117, 117, 0.1);
-          color: #757575;
-        }
-
-        .status-indicator {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-size: 0.875rem;
-          position: absolute;
-          top: 1.5rem;
-          right: 2rem;
-        }
-
-        .status-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background-color: #64ffda;
-        }
-
-        .status-dot.offline {
-          background-color: #ff5555;
-        }
-
-        /* New styles from second page */
-        .header-actions {
-          display: flex;
-          justify-content: center;
-          gap: 1rem;
-          margin-top: 1rem;
-        }
-
-        .action-button {
-          background-color: #64ffda;
-          color: #0a192f;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 4px;
-          cursor: pointer;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          transition: background-color 0.3s;
-        }
-
-        .action-button:hover {
-          background-color: #52d1b2;
-        }
-
-        .gps-btn {
-          background: none;
-          border: none;
-          color: #64ffda;
-          cursor: pointer;
-          margin-left: 0.5rem;
-          font-size: 1rem;
-          padding: 0.25rem;
-        }
-
-        .gps-btn:hover {
-          color: #52d1b2;
-        }
-
-        #mapContainer {
-          border-radius: 8px;
-          overflow: hidden;
-          border: 1px solid #233554;
-        }
-
-        .gps-history-entry {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.25rem 0;
-          border-bottom: 1px solid #233554;
-        }
-
-        .gps-history-coords {
-          font-family: monospace;
-        }
-
-        /* Leaflet map adjustments */
-        .leaflet-container {
-          background-color: #0a192f !important;
-        }
-
-        .leaflet-control {
-          background-color: #112240 !important;
-          color: #e6f1ff !important;
-        }
-
-        .leaflet-bar a {
-          color: #e6f1ff !important;
-          background-color: #112240 !important;
-          border-bottom: 1px solid #233554 !important;
-        }
-
-        .leaflet-bar a:hover {
-          background-color: #1e2a47 !important;
-        }
-
-        .action-button i {
-          font-size: 1rem;
-        }
-
-        .btn-danger {
-          background-color: #ff5555;
-          color: white;
-        }
-
-        .btn-danger:hover {
-          background-color: #e53935;
-        }
-
-        .data-log-panel {
-          max-height: 150px;
-          overflow-y: auto;
-          margin-top: 1rem;
-          border: 1px solid #233554;
-          border-radius: 8px;
-          padding: 0.5rem;
-          font-size: 0.8rem;
-          background-color: #1e2a47;
-        }
-
-        .log-entry {
-          padding: 0.25rem 0;
-          border-bottom: 1px solid #233554;
-          color: #ccd6f6;
-        }
-
-        .btn {
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 8px;
-          font-weight: 600;
-          text-align: center;
-          width: 100%;
-          margin-top: 0.5rem;
-          cursor: pointer;
-          transition: background-color 0.3s;
-        }
-
-        .btn-primary {
-          background-color: #64ffda;
-          color: #0a192f;
-        }
-
-        .btn-primary:hover {
-          background-color: #52d1b2;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1200px) {
-          .container {
-            flex-direction: column;
-          }
-
-          .dashboard {
-            min-width: 100%;
-          }
-
-          .jacket-view {
-            width: 100%;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .chart-card {
-            grid-column: span 1;
-          }
-
-          .sensor-grid {
-            grid-template-columns: 1fr;
-          }
-
-          header {
-            padding: 1rem;
-          }
-
-          .status-indicator {
-            position: static;
-            justify-content: center;
-            margin-top: 0.5rem;
-          }
-
-          .header-actions {
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-
-          .action-button {
-            width: 100%;
-          }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H.E.V. Suit - Firebase Integration</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Roboto", sans-serif;
+      background-color: #0a192f;
+      color: #e6f1ff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .user-selection {
+      background-color: #112240;
+      padding: 1rem;
+      margin: 0 2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: center;
+      border-bottom: 2px solid #64ffda;
+    }
+
+    .user-selection label {
+      color: #64ffda;
+      font-weight: 500;
+    }
+
+    .user-selection select {
+      background-color: #233554;
+      color: #e6f1ff;
+      border: 1px solid #64ffda;
+      padding: 0.5rem;
+      border-radius: 5px;
+      min-width: 150px;
+    }
+
+    #mapContainer {
+      height: 400px;
+      margin-top: 1rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #233554;
+    }
+
+    .leaflet-container {
+      background-color: #0a192f !important;
+    }
+
+    #mapContainer {
+      height: 500px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: none;
+      /* Start hidden */
+    }
+
+    .mapboxgl-popup {
+      max-width: 200px;
+    }
+
+    .mapboxgl-popup-content {
+      background-color: #112240;
+      color: #e6f1ff;
+      font-family: 'Roboto', sans-serif;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .user-selection form {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .user-selection select {
+      background-color: #233554;
+      color: #e6f1ff;
+      border: 1px solid #64ffda;
+      padding: 0.5rem;
+      border-radius: 5px;
+      min-width: 150px;
+      cursor: pointer;
+    }
+
+    .user-selection button[type="submit"] {
+      margin: 0;
+    }
+
+    .mapboxgl-popup-close-button {
+      color: #e6f1ff;
+      font-size: 1.5rem;
+      padding: 0 5px;
+    }
+
+    .mapboxgl-ctrl-group {
+      background-color: #112240;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .mapboxgl-ctrl-icon {
+      filter: invert(1) brightness(0.8);
+    }
+
+    .leaflet-control {
+      background-color: #112240 !important;
+      color: #e6f1ff !important;
+    }
+
+    .leaflet-bar a {
+      color: #e6f1ff !important;
+      background-color: #112240 !important;
+      border-bottom: 1px solid #233554 !important;
+    }
+
+    .leaflet-bar a:hover {
+      background-color: #1e2a47 !important;
+    }
+
+    header {
+      background-color: #112240;
+      padding: 1.5rem;
+      text-align: center;
+      border-bottom: 2px solid #64ffda;
+      position: relative;
+    }
+
+    h1 {
+      font-family: "Orbitron", sans-serif;
+      color: #64ffda;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #ccd6f6;
+      font-size: 1.1rem;
+    }
+
+    .container {
+      display: relative;
+      flex: 1;
+      padding: 2rem;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .dashboard {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      min-width: 600px;
+    }
+
+    .jacket-view {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #112240;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .jacket {
+      position: relative;
+      width: 200px;
+      height: 400px;
+      margin: 2rem 0;
+    }
+
+    .jacket-part {
+      position: absolute;
+      transition: all 0.3s ease;
+    }
+
+    /* Jacket parts */
+    .body {
+      width: 180px;
+      height: 280px;
+      background-color: #233554;
+      border-radius: 20px 20px 0 0;
+      top: 50px;
+      left: 10px;
+      z-index: 1;
+    }
+
+    .left-upper-arm {
+      width: 50px;
+      height: 100px;
+      background-color: #1e2a47;
+      border-radius: 10px;
+      top: 60px;
+      left: -40px;
+      transform: rotate(15deg);
+      z-index: 0;
+    }
+
+    .left-lower-arm {
+      width: 40px;
+      height: 120px;
+      background-color: #1e2a47;
+      border-radius: 10px;
+      top: 150px;
+      left: -50px;
+      transform: rotate(15deg);
+      z-index: 0;
+    }
+
+    .right-upper-arm {
+      width: 50px;
+      height: 100px;
+      background-color: #1e2a47;
+      border-radius: 10px;
+      top: 60px;
+      right: -40px;
+      transform: rotate(-15deg);
+      z-index: 0;
+    }
+
+    .right-lower-arm {
+      width: 40px;
+      height: 120px;
+      background-color: #1e2a47;
+      border-radius: 10px;
+      top: 150px;
+      right: -50px;
+      transform: rotate(-15deg);
+      z-index: 0;
+    }
+
+    .helmet {
+      width: 150px;
+      height: 120px;
+      background-color: #233554;
+      border-radius: 50% 50% 0 0;
+      top: 0;
+      left: 25px;
+      z-index: 2;
+    }
+
+    /* Damage states */
+    .damage-critical {
+      background-color: #ff5555 !important;
+      box-shadow: 0 0 15px #ff5555;
+      animation: pulse-danger 1s infinite;
+    }
+
+    .damage-warning {
+      background-color: #ffaa33 !important;
+      box-shadow: 0 0 10px #ffaa33;
+      animation: pulse-warning 2s infinite;
+    }
+
+    .damage-safe {
+      background-color: #64ffda !important;
+    }
+
+    @keyframes pulse-danger {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse-warning {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      color: #ccd6f6;
+      font-size: 0.9rem;
+    }
+
+    select {
+      background-color: #233554;
+      color: #e6f1ff;
+      border: 1px solid #64ffda;
+      padding: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .status-card {
+      background-color: #112240;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-card h3 {
+      color: #64ffda;
+      margin-bottom: 1rem;
+      font-family: "Orbitron", sans-serif;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #233554;
+    }
+
+    .status-label {
+      color: #ccd6f6;
+    }
+
+    .status-value {
+      font-weight: 500;
+    }
+
+    .critical {
+      color: #ff5555;
+    }
+
+    .warning {
+      color: #ffaa33;
+    }
+
+    .safe {
+      color: #64ffda;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background-color: #112240;
+      border-top: 2px solid #64ffda;
+      font-size: 0.9rem;
+      color: #8892b0;
+    }
+
+    .firebase-config {
+      background-color: #1e2a47;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .firebase-config h4 {
+      color: #64ffda;
+      margin-bottom: 0.5rem;
+    }
+
+    .firebase-config input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background-color: #233554;
+      border: 1px solid #64ffda;
+      color: #e6f1ff;
+      border-radius: 4px;
+    }
+
+    .firebase-config button {
+      background-color: #64ffda;
+      color: #0a192f;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    .firebase-config button:hover {
+      background-color: #52d1b2;
+    }
+
+    /* New styles for charts and alerts */
+    .chart-card {
+      background-color: #112240;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      grid-column: span 2;
+    }
+
+    .chart-card h3 {
+      color: #64ffda;
+      margin-bottom: 1rem;
+      font-family: "Orbitron", sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .chart-card h3 i {
+      font-size: 1.25rem;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 200px;
+      margin-top: 1rem;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background-color: rgba(30, 42, 71, 0.8);
+      border-left: 4px solid #64ffda;
+    }
+
+    .alert-danger {
+      border-left-color: #ff5555;
+    }
+
+    .alert-warning {
+      border-left-color: #ffaa33;
+    }
+
+    .alert-success {
+      border-left-color: #64ffda;
+    }
+
+    .alert-icon {
+      font-size: 1.5rem;
+      color: #ff5555;
+    }
+
+    .alert-warning .alert-icon {
+      color: #ffaa33;
+    }
+
+    .alert-success .alert-icon {
+      color: #64ffda;
+    }
+
+    .alert-content h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #e6f1ff;
+    }
+
+    .alert-content p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      color: #ccd6f6;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #233554;
+      transition: 0.4s;
+      border-radius: 24px;
+      border: 1px solid #64ffda;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #64ffda;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: #112240;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(26px);
+    }
+
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .sensor-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background-color: #1e2a47;
+      border-radius: 8px;
+      border: 1px solid #233554;
+    }
+
+    .sensor-name {
+      font-weight: 500;
+      color: #ccd6f6;
+    }
+
+    .sensor-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background-color: rgba(100, 255, 218, 0.1);
+      color: #64ffda;
+    }
+
+    .status-inactive {
+      background-color: rgba(117, 117, 117, 0.1);
+      color: #757575;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #64ffda;
+    }
+
+    .status-dot.offline {
+      background-color: #ff5555;
+    }
+
+    /* New styles from second page */
+    .header-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .action-button {
+      background-color: #64ffda;
+      color: #0a192f;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.3s;
+    }
+
+    .action-button:hover {
+      background-color: #52d1b2;
+    }
+
+    .gps-btn {
+      background: none;
+      border: none;
+      color: #64ffda;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      font-size: 1rem;
+      padding: 0.25rem;
+    }
+
+    .gps-btn:hover {
+      color: #52d1b2;
+    }
+
+    #mapContainer {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #233554;
+    }
+
+    .gps-history-entry {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #233554;
+    }
+
+    .gps-history-coords {
+      font-family: monospace;
+    }
+
+    /* Leaflet map adjustments */
+    .leaflet-container {
+      background-color: #0a192f !important;
+    }
+
+    .leaflet-control {
+      background-color: #112240 !important;
+      color: #e6f1ff !important;
+    }
+
+    .leaflet-bar a {
+      color: #e6f1ff !important;
+      background-color: #112240 !important;
+      border-bottom: 1px solid #233554 !important;
+    }
+
+    .leaflet-bar a:hover {
+      background-color: #1e2a47 !important;
+    }
+
+    .action-button i {
+      font-size: 1rem;
+    }
+
+    .btn-danger {
+      background-color: #ff5555;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #e53935;
+    }
+
+    .data-log-panel {
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      border: 1px solid #233554;
+      border-radius: 8px;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      background-color: #1e2a47;
+    }
+
+    .log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #233554;
+      color: #ccd6f6;
+    }
+
+    .btn {
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #64ffda;
+      color: #0a192f;
+    }
+
+    .btn-primary:hover {
+      background-color: #52d1b2;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .dashboard {
+        min-width: 100%;
+      }
+
+      .jacket-view {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .chart-card {
+        grid-column: span 1;
+      }
+
+      .sensor-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding: 1rem;
+      }
+
+      .status-indicator {
+        position: static;
+        justify-content: center;
+        margin-top: 0.5rem;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .action-button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <header>
-        <h1>H.E.V. SUIT</h1>
-        <p class="subtitle">Firebase Realtime Monitoring System</p>
-        <div class="status-indicator">
-            <div class="status-dot" id="connectionStatus"></div>
-            <span id="connectionText">Connecting...</span>
-        </div>
-        <div class="user-selection">
-            <label for="userSelect">Select User:</label>
-            <select id="userSelect">
-                <option value="">Loading users...</option>
-            </select>
-            <button id="submitUserBtn" class="action-button">
-                <i class="fas fa-user"></i> Load User Data
-            </button>
-        </div>
-
-        <div class="header-actions">
-            <button class="action-button" id="downloadBtn">
-                <i class="fas fa-download"></i> Download Report
-            </button>
-            <button class="action-button" id="refreshBtn">
-                <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-            <button class="action-button btn-danger" id="emergencyBtn">
-                <i class="fas fa-bell"></i> Emergency Alert
-            </button>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="dashboard">
-            <div class="chart-card">
-                <h3><i class="fas fa-exclamation-triangle"></i> Alerts</h3>
-                <div id="alertsContainer">
-                    <!-- Alerts will be dynamically inserted here -->
-                </div>
-            </div>
-
-
-            <div class="jacket-view">
-                <h2>SUIT INTEGRITY VISUALIZATION</h2>
-                <div class="jacket">
-                    <div class="jacket-part helmet" id="helmet"></div>
-                    <div class="jacket-part body" id="body"></div>
-                    <div class="jacket-part left-upper-arm" id="left-upper-arm"></div>
-                    <div class="jacket-part left-lower-arm" id="left-lower-arm"></div>
-                    <div class="jacket-part right-upper-arm" id="right-upper-arm"></div>
-                    <div class="jacket-part right-lower-arm" id="right-lower-arm"></div>
-                </div>
-
-                <div class="controls">
-                    <div class="control-group">
-                        <label>Current Damage State:</label>
-                        <div id="current-damage" class="status-value safe">No damage detected</div>
-                    </div>
-                    <button id="testDataBtn" class="action-button">
-                        Push Test Data
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-card">
-            <div class="card-header">
-                <h3><i class="fas fa-heartbeat"></i> Heart Rate</h3>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="togglePulse" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Current</span>
-                <span class="status-value" id="heart-rate">-- bpm</span>
-            </div>
-            <div class="chart-container">
-                <canvas id="bpmChart"></canvas>
-            </div>
-            <div class="data-log-panel" id="bpmLog"></div>
-        </div>
-
-        <div class="status-card">
-            <div class="card-header">
-                <h3><i class="fas fa-thermometer-half"></i> Body Temp</h3>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggleTemp" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Current</span>
-                <span class="status-value" id="body-temp">-- °C</span>
-            </div>
-            <div class="chart-container">
-                <canvas id="tempChart"></canvas>
-            </div>
-            <div class="data-log-panel" id="tempLog"></div>
-        </div>
-
-        <div class="status-card">
-            <div class="card-header">
-                <h3><i class="fas fa-tint"></i> Humidity</h3>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggleHum" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Current</span>
-                <span class="status-value" id="humidity">-- %</span>
-            </div>
-            <div class="chart-container">
-                <canvas id="humidityChart"></canvas>
-            </div>
-            <div class="data-log-panel" id="humidityLog"></div>
-        </div>
-
-        <div class="status-card">
-            <h3>DAMAGE REPORT</h3>
-            <div class="status-item">
-                <span class="status-label">Torso</span>
-                <span class="status-value safe" id="torso-status">Nominal</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Left Arm</span>
-                <span class="status-value safe" id="left-arm-status">Nominal</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Right Arm</span>
-                <span class="status-value safe" id="right-arm-status">Nominal</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">System Integrity</span>
-                <span class="status-value safe" id="system-status">100%</span>
-            </div>
-        </div>
-
-        <div class="status-card">
-            <div class="card-header">
-                <h3><i class="fas fa-arrows-alt"></i> Tilt Status</h3>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggleTilt" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="sensor-grid">
-                <div class="sensor-item">
-                    <span class="sensor-name">Tilt Detected</span>
-                    <span class="sensor-status status-inactive" id="tiltStatus">No</span>
-                </div>
-                <div class="sensor-item">
-                    <span class="sensor-name">Arm Damage</span>
-                    <span class="sensor-status status-inactive" id="armDamageStatus">No</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-card">
-            <h3><i class="fas fa-sliders-h"></i> Sensor Controls</h3>
-            <div class="sensor-grid">
-                <div class="sensor-item">
-                    <span class="sensor-name">Pulse Sensor</span>
-                    <span class="sensor-status status-active" id="pulseSensorStatus">Active</span>
-                </div>
-                <div class="sensor-item">
-                    <span class="sensor-name">Temp Sensor</span>
-                    <span class="sensor-status status-active" id="tempSensorStatus">Active</span>
-                </div>
-                <div class="sensor-item">
-                    <span class="sensor-name">Humidity Sensor</span>
-                    <span class="sensor-status status-active" id="humSensorStatus">Active</span>
-                </div>
-                <div class="sensor-item">
-                    <span class="sensor-name">Tilt Sensor</span>
-                    <span class="sensor-status status-active" id="tiltSensorStatus">Active</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-card">
-            <h3>ENVIRONMENTAL DATA</h3>
-            <div class="status-item">
-                <span class="status-label">External Temp</span>
-                <span class="status-value" id="ext-temp">-- °C</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Air Quality</span>
-                <span class="status-value safe" id="air-quality">--</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Toxic Gas</span>
-                <span class="status-value safe" id="toxic-gas">--</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">GPS Location</span>
-                <span class="status-value" id="gps-location">--</span>
-                <button class="gps-btn" id="showMapBtn" title="Show on Map">
-                    <i class="fas fa-map-marked-alt"></i>
-                </button>
-                <button class="gps-btn" id="showHistoryBtn" title="Show History">
-                    <i class="fas fa-history"></i>
-                </button>
-            </div>
-            <div id="mapContainer" style="display: none; height: 200px; margin-top: 1rem;">
-                <div id="map" style="height: 100%;"></div>
-            </div>
-            <div id="gpsHistoryPanel" class="data-log-panel" style="display: none;"></div>
-        </div>
+  <header>
+    <h1>H.E.V. SUIT</h1>
+    <p class="subtitle">Firebase Realtime Monitoring System</p>
+    <div class="status-indicator">
+      <div class="status-dot" id="connectionStatus"></div>
+      <span id="connectionText">Connecting...</span>
+    </div>
+    <div class="user-selection">
+      <label for="userSelect">Select User:</label>
+      <select id="userSelect">
+        <option value="">Loading users...</option>
+      </select>
+      <button id="submitUserBtn" class="action-button">
+        <i class="fas fa-user"></i> Load User Data
+      </button>
     </div>
 
-    <footer>
-        © 2025 H.E.V. Suit System | Hazardous Environment Protection Technology | 2MBS Software Solution
-    </footer>
+    <div class="header-actions">
+      <button class="action-button" id="downloadBtn">
+        <i class="fas fa-download"></i> Download Report
+      </button>
+      <button class="action-button btn-fan" id="fanStateBtn">
+        <i class="fas fa-sync-alt"></i> Set Fan State
+      </button>
+      <button class="action-button btn-danger" id="emergencyBtn">
+        <i class="fas fa-bell"></i> Emergency Alert
+      </button>
+    </div>
+  </header>
 
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // ------------------- INITIAL SETUP -------------------
-            const dataLogs = {
-                bpm: Array(30).fill(null),
-                temp: Array(30).fill(null),
-                humidity: Array(30).fill(null),
-                timestamps: Array(30).fill(null),
-            };
+  <div class="container">
+    <div class="dashboard">
+      <div class="chart-card">
+        <h3><i class="fas fa-exclamation-triangle"></i> Alerts</h3>
+        <div id="alertsContainer">
+          <!-- Alerts will be dynamically inserted here -->
+        </div>
+      </div>
 
-            let marker;
-            let suitRef = null;
-            const gpsHistory = [];
-            const MAX_GPS_HISTORY = 50;
+      <div class="jacket-view">
+        <h2>SUIT INTEGRITY VISUALIZATION</h2>
+        <div class="jacket">
+          <div class="jacket-part helmet" id="helmet"></div>
+          <div class="jacket-part body" id="body"></div>
+          <div class="jacket-part left-upper-arm" id="left-upper-arm"></div>
+          <div class="jacket-part left-lower-arm" id="left-lower-arm"></div>
+          <div class="jacket-part right-upper-arm" id="right-upper-arm"></div>
+          <div class="jacket-part right-lower-arm" id="right-lower-arm"></div>
+        </div>
 
-            const userColors = [
-                "#FF5555", "#64FFDA", "#1E88E5", "#FFAA33", "#9C27B0",
-                "#4CAF50", "#FF5722", "#607D8B", "#E91E63", "#3F51B5"
-            ];
+        <div class="controls">
+          <div class="control-group">
+            <label>Current Damage State:</label>
+            <div id="current-damage" class="status-value safe">No damage detected</div>
+          </div>
+          <button id="testDataBtn" class="action-button">
+            Push Test Data
+          </button>
+        </div>
+      </div>
+    </div>
 
-            let currentUser = null;
-            let userPolylines = {};
+    <div class="status-card">
+      <div class="card-header">
+        <h3><i class="fas fa-heartbeat"></i> Heart Rate</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" id="togglePulse" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Current</span>
+        <span class="status-value" id="heartPulse">-- bpm</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="bpmChart"></canvas>
+      </div>
+      <div class="data-log-panel" id="bpmLog"></div>
+    </div>
 
-            // ------------------- MAPBOX -------------------
-            mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhdGh1cmFtYW5haGFyYSIsImEiOiJjbWF0ZTFubXgwdzl5MmlvczhzOWx6NzdmIn0.mj97jh4UTUQy67GBWeDYXw';
+    <div class="status-card">
+      <div class="card-header">
+        <h3><i class="fas fa-thermometer-half"></i> Body Temp</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleTemp" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Current</span>
+        <span class="status-value" id="body-temp">-- °C</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="tempChart"></canvas>
+      </div>
+      <div class="data-log-panel" id="tempLog"></div>
+    </div>
 
-            const map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/dark-v11',
-                center: [-115.1550, 36.0900],
-                zoom: 12,
-                pitch: 45
-            });
+    <div class="status-card">
+      <div class="card-header">
+        <h3><i class="fas fa-tint"></i> Humidity</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleHum" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Current</span>
+        <span class="status-value" id="humidity">-- %</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="humidityChart"></canvas>
+      </div>
+      <div class="data-log-panel" id="humidityLog"></div>
+    </div>
 
-            map.addControl(new mapboxgl.NavigationControl());
+    <div class="status-card">
+      <h3>DAMAGE REPORT</h3>
+      <div class="status-item">
+        <span class="status-label">Torso</span>
+        <span class="status-value safe" id="torso-status">Nominal</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Left Arm</span>
+        <span class="status-value safe" id="left-arm-status">Nominal</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Right Arm</span>
+        <span class="status-value safe" id="right-arm-status">Nominal</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">System Integrity</span>
+        <span class="status-value safe" id="system-status">100%</span>
+      </div>
+    </div>
 
-            map.on('load', () => {
-                map.addSource('mapbox-dem', {
-                    type: 'raster-dem',
-                    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    tileSize: 512,
-                    maxzoom: 14
-                });
-                map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-                map.addLayer({
-                    'id': 'sky',
-                    'type': 'sky',
-                    'paint': {
-                        'sky-type': 'atmosphere',
-                        'sky-atmosphere-sun': [0.0, 0.0],
-                        'sky-atmosphere-sun-intensity': 15
-                    }
-                });
+    <div class="status-card">
+      <div class="card-header">
+        <h3><i class="fas fa-arrows-alt"></i> Tilt Status</h3>
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleTilt" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          <span class="sensor-name">Tilt Detected</span>
+          <span class="sensor-status status-inactive" id="tiltStatus">No</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Arm Damage</span>
+          <span class="sensor-status status-inactive" id="armDamageStatus">No</span>
+        </div>
+      </div>
+    </div>
 
-                // Initialize Firebase and load users
-                initializeFirebase();
-            });
+    <div class="status-card">
+      <h3><i class="fas fa-sliders-h"></i> Sensor Controls</h3>
+      <div class="sensor-grid">
+        <div class="sensor-item">
+          <span class="sensor-name">Pulse Sensor</span>
+          <span class="sensor-status status-active" id="pulseSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Temp Sensor</span>
+          <span class="sensor-status status-active" id="tempSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Humidity Sensor</span>
+          <span class="sensor-status status-active" id="humSensorStatus">Active</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-name">Tilt Sensor</span>
+          <span class="sensor-status status-active" id="tiltSensorStatus">Active</span>
+        </div>
+      </div>
+    </div>
 
-            // ------------------- FIREBASE -------------------
-            function initializeFirebase() {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyB24DNM3zDddY2hXr5RKByD64L8I_sx6Vc",
-                    authDomain: "hev-iot-system.firebaseapp.com",
-                    databaseURL: "https://hev-iot-system-default-rtdb.asia-southeast1.firebasedatabase.app",
-                    projectId: "hev-iot-system",
-                    storageBucket: "hev-iot-system.firebasestorage.app",
-                    messagingSenderId: "1003400309592",
-                    appId: "1:1003400309592:web:0086a6d56c48f67ea6d32d",
-                    measurementId: "G-VFMDHG8828"
-                };
-                
-                // Initialize Firebase
-                firebase.initializeApp(firebaseConfig);
-                
-                // Update connection status
-                document.getElementById("connectionStatus").style.backgroundColor = "#64ffda";
-                document.getElementById("connectionText").textContent = "Connected";
-                
-                // Load all users from Firebase
-                loadAllUsers();
+    <div class="status-card">
+      <h3>ENVIRONMENTAL DATA</h3>
+      <div class="status-item">
+        <span class="status-label">External Temp</span>
+        <span class="status-value" id="ext-temp">-- °C</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Air Quality</span>
+        <span class="status-value safe" id="air-quality">--</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Toxic Gas</span>
+        <span class="status-value safe" id="toxic-gas">--</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">GPS Location</span>
+        <span class="status-value" id="gps-location">--</span>
+        <button class="gps-btn" id="showMapBtn" title="Show on Map">
+          <i class="fas fa-map-marked-alt"></i>
+        </button>
+        <button class="gps-btn" id="showHistoryBtn" title="Show History">
+          <i class="fas fa-history"></i>
+        </button>
+      </div>
+      <div id="mapContainer" style="display: none; height: 200px; margin-top: 1rem;">
+        <div id="map" style="height: 100%;"></div>
+      </div>
+      <div id="gpsHistoryPanel" class="data-log-panel" style="display: none;"></div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 H.E.V. Suit System | Hazardous Environment Protection Technology | 2MBS Software Solution
+  </footer>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // ------------------- INITIAL SETUP -------------------
+      const dataLogs = {
+        bpm: Array(30).fill(null),
+        temp: Array(30).fill(null),
+        humidity: Array(30).fill(null),
+        timestamps: Array(30).fill(null),
+      };
+
+      let marker;
+      let suitRef = null;
+      const gpsHistory = [];
+      const MAX_GPS_HISTORY = 50;
+
+      const userColors = [
+        "#FF5555", "#64FFDA", "#1E88E5", "#FFAA33", "#9C27B0",
+        "#4CAF50", "#FF5722", "#607D8B", "#E91E63", "#3F51B5"
+      ];
+
+      let currentUser = null;
+      let userPolylines = {};
+
+      // ------------------- ALERT SYSTEM -------------------
+      const alertSystem = {
+        activeAlerts: new Map(),
+        alertHistory: [],
+        maxHistoryItems: 50,
+
+        // Add a new alert
+        addAlert: function (title, message, type, persistent = false) {
+          // Check for duplicate alerts
+          const alertKey = `${title}-${message}`;
+          if (this.activeAlerts.has(alertKey)) return;
+
+          const alertsContainer = document.getElementById('alertsContainer');
+          const alertId = 'alert-' + Date.now();
+
+          const alertDiv = document.createElement('div');
+          alertDiv.className = `alert alert-${type}`;
+          alertDiv.id = alertId;
+          alertDiv.innerHTML = `
+            <i class="fas ${type === 'danger' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'} alert-icon"></i>
+            <div class="alert-content">
+              <h4>${title}</h4>
+              <p>${message}</p>
+            </div>
+            <button onclick="alertSystem.removeAlert('${alertId}', '${alertKey}')" 
+                    style="background: none; border: none; cursor: pointer; margin-left: auto;">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+
+          alertsContainer.insertBefore(alertDiv, alertsContainer.firstChild);
+
+          // Store alert reference
+          this.activeAlerts.set(alertKey, {
+            id: alertId,
+            persistent: persistent
+          });
+
+          // Auto-remove after 30 seconds if not persistent
+          if (!persistent) {
+            setTimeout(() => {
+              this.removeAlert(alertId, alertKey);
+            }, 30000);
+          }
+
+          // Play alert sound
+          this.playAlertSound(type);
+
+          // Add to history
+          this.alertHistory.unshift({
+            title,
+            message,
+            type,
+            timestamp: new Date().toLocaleTimeString()
+          });
+
+          // Trim history if too long
+          if (this.alertHistory.length > this.maxHistoryItems) {
+            this.alertHistory.pop();
+          }
+
+          return alertKey;
+        },
+
+        // Remove an alert
+        removeAlert: function (alertId, alertKey) {
+          const alert = document.getElementById(alertId);
+          if (alert) {
+            alert.style.opacity = '0';
+            setTimeout(() => {
+              alert.remove();
+              if (alertKey) {
+                this.activeAlerts.delete(alertKey);
+              }
+            }, 300);
+          }
+        },
+
+        // Clear all non-persistent alerts
+        clearAllAlerts: function () {
+          this.activeAlerts.forEach((value, key) => {
+            if (!value.persistent) {
+              this.removeAlert(value.id, key);
             }
+          });
+        },
 
-            function loadAllUsers() {
-                const usersRef = firebase.database().ref('employees');
-                const userSelect = document.getElementById('userSelect');
-                
-                usersRef.once('value').then((snapshot) => {
-                    const users = snapshot.val();
-                    userSelect.innerHTML = '<option value="">Select a user</option>';
-                    
-                    if (users) {
-                        let userIndex = 0;
-                        Object.keys(users).forEach(userId => {
-                            const option = document.createElement('option');
-                            option.value = userId;
-                            option.textContent = userId;
-                            userSelect.appendChild(option);
-                            
-                            // Assign a color to this user
-                            if (!userPolylines[userId]) {
-                                const color = userColors[userIndex % userColors.length];
-                                userPolylines[userId] = {
-                                    color: color,
-                                    data: {
-                                        type: 'FeatureCollection',
-                                        features: [{
-                                            type: 'Feature',
-                                            geometry: { 
-                                                type: 'LineString', 
-                                                coordinates: [] 
-                                            }
-                                        }]
-                                    }
-                                };
-                                userIndex++;
-                            }
-                        });
-                    } else {
-                        userSelect.innerHTML = '<option value="">No users found</option>';
-                    }
-                }).catch((error) => {
-                    console.error("Error loading users:", error);
-                    userSelect.innerHTML = '<option value="">Error loading users</option>';
-                });
-            }
+        // Play appropriate sound for alert type
+        playAlertSound: function (type) {
+          const audio = new Audio();
+          audio.src = type === 'danger' ?
+            'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3' :
+            'https://assets.mixkit.co/sfx/preview/mixkit-warning-alarm-buzzer-991.mp3';
+          audio.volume = 0.3;
+          audio.play().catch(e => console.log('Audio play failed:', e));
+        },
 
-            function setupUserListeners(userId) {
-                if (suitRef) suitRef.off();
-                suitRef = firebase.database().ref(`employees/${userId}/sensor`);
+        // Check if an alert already exists
+        hasAlert: function (title, message) {
+          const alertKey = `${title}-${message}`;
+          return this.activeAlerts.has(alertKey);
+        }
+      };
 
-                suitRef.child("heartRate").on("value", snapshot => {
-                    const bpm = snapshot.val();
-                    if (bpm !== null && !isNaN(bpm)) updateSensorData('bpm', bpm);
-                });
+      // Make available globally
+      window.alertSystem = alertSystem;
 
-                suitRef.child("temperature").on("value", snapshot => {
-                    const temp = snapshot.val();
-                    if (temp !== null && !isNaN(temp)) updateSensorData('temp', temp);
-                });
+      // Alert checking functions
+      function checkBPMAlerts(bpm) {
+        if (bpm > 100) {
+          alertSystem.addAlert(
+            'High Heart Rate',
+            `Heart rate is elevated (${bpm} bpm). The wearer may be in distress.`,
+            'danger'
+          );
+        } else if (bpm < 50) {
+          alertSystem.addAlert(
+            'Low Heart Rate',
+            `Heart rate is unusually low (${bpm} bpm). Check the wearer's condition.`,
+            'danger'
+          );
+        } else if (bpm <= 100 && bpm >= 50) {
+          // If heart rate returns to normal, remove related alerts
+          const highKey = 'High Heart Rate-Heart rate is elevated';
+          const lowKey = 'Low Heart Rate-Heart rate is unusually low';
+          if (alertSystem.hasAlert('High Heart Rate', 'Heart rate is elevated')) {
+            alertSystem.removeAlert(null, highKey);
+          }
+          if (alertSystem.hasAlert('Low Heart Rate', 'Heart rate is unusually low')) {
+            alertSystem.removeAlert(null, lowKey);
+          }
+        }
+      }
 
-                suitRef.child("humidity").on("value", snapshot => {
-                    const humidity = snapshot.val();
-                    if (humidity !== null && !isNaN(humidity)) updateSensorData('humidity', humidity);
-                });
+      function checkTempAlerts(temp) {
+        if (temp > 38) {
+          alertSystem.addAlert(
+            'High Temperature',
+            `Suit temperature is high (${temp.toFixed(1)}°C). Risk of overheating.`,
+            'warning'
+          );
+        } else if (temp < 20) {
+          alertSystem.addAlert(
+            'Low Temperature',
+            `Suit temperature is low (${temp.toFixed(1)}°C). Check environment.`,
+            'warning'
+          );
+        } else {
+          // If temperature returns to normal, remove related alerts
+          const highKey = 'High Temperature-Suit temperature is high';
+          const lowKey = 'Low Temperature-Suit temperature is low';
+          if (alertSystem.hasAlert('High Temperature', 'Suit temperature is high')) {
+            alertSystem.removeAlert(null, highKey);
+          }
+          if (alertSystem.hasAlert('Low Temperature', 'Suit temperature is low')) {
+            alertSystem.removeAlert(null, lowKey);
+          }
+        }
+      }
 
-                suitRef.child("gps").on("value", snapshot => {
-                    const gpsData = snapshot.val();
-                    if (gpsData?.latitude && gpsData?.longitude) {
-                        updateGPSLocation(userId, gpsData.latitude, gpsData.longitude);
-                    }
-                });
+      // ------------------- MAPBOX -------------------
+      mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhdGh1cmFtYW5haGFyYSIsImEiOiJjbWF0ZTFubXgwdzl5MmlvczhzOWx6NzdmIn0.mj97jh4UTUQy67GBWeDYXw';
 
-                // Listen for damage status updates
-                suitRef.child("Upper_Arm_L_Damaged").on("value", snapshot => {
-                    const isDamaged = snapshot.val();
-                    document.getElementById("left-upper-arm").className = `jacket-part left-upper-arm ${isDamaged ? 'damage-critical' : ''}`;
-                    document.getElementById("left-arm-status").className = `status-value ${isDamaged ? 'critical' : 'safe'}`;
-                    document.getElementById("left-arm-status").textContent = isDamaged ? "Damaged" : "Nominal";
-                });
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [79.794609, 6.9062952],
+        zoom: 12,
+        pitch: 45
+      });
 
-                suitRef.child("Lower_Arm_L_Damaged").on("value", snapshot => {
-                    const isDamaged = snapshot.val();
-                    document.getElementById("left-lower-arm").className = `jacket-part left-lower-arm ${isDamaged ? 'damage-critical' : ''}`;
-                });
+      map.addControl(new mapboxgl.NavigationControl());
 
-                suitRef.child("Upper_Arm_R_Damaged").on("value", snapshot => {
-                    const isDamaged = snapshot.val();
-                    document.getElementById("right-upper-arm").className = `jacket-part right-upper-arm ${isDamaged ? 'damage-critical' : ''}`;
-                    document.getElementById("right-arm-status").className = `status-value ${isDamaged ? 'critical' : 'safe'}`;
-                    document.getElementById("right-arm-status").textContent = isDamaged ? "Damaged" : "Nominal";
-                });
-
-                suitRef.child("Lower_Arm_R_Damaged").on("value", snapshot => {
-                    const isDamaged = snapshot.val();
-                    document.getElementById("right-lower-arm").className = `jacket-part right-lower-arm ${isDamaged ? 'damage-critical' : ''}`;
-                });
-
-                suitRef.child("tiltVal").on("value", snapshot => {
-                    const isTilted = snapshot.val();
-                    document.getElementById("tiltStatus").className = `sensor-status ${isTilted ? 'status-active' : 'status-inactive'}`;
-                    document.getElementById("tiltStatus").textContent = isTilted ? "Yes" : "No";
-                });
-            }
-
-            // ------------------- CHARTS -------------------
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 0 },
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: "#ccd6f6" } },
-                    y: { ticks: { color: "#ccd6f6" } }
-                },
-                elements: {
-                    point: { radius: 0 },
-                    line: { borderWidth: 2, tension: 0.3 }
-                }
-            };
-
-            const bpmChart = new Chart(document.getElementById("bpmChart"), {
-                type: "line",
-                data: { labels: [], datasets: [{ label: "BPM", data: [], borderColor: "#ff5555" }] },
-                options: { ...chartOptions, scales: { y: { min: 50, max: 120 } } }
-            });
-
-            const tempChart = new Chart(document.getElementById("tempChart"), {
-                type: "line",
-                data: { labels: [], datasets: [{ label: "Temp", data: [], borderColor: "#64ffda" }] },
-                options: { ...chartOptions, scales: { y: { min: 20, max: 40 } } }
-            });
-
-            const humidityChart = new Chart(document.getElementById("humidityChart"), {
-                type: "line",
-                data: { labels: [], datasets: [{ label: "Humidity", data: [], borderColor: "#1e88e5" }] },
-                options: { ...chartOptions, scales: { y: { min: 30, max: 80 } } }
-            });
-
-            // ------------------- SENSOR + CHARTS -------------------
-            function updateSensorData(type, value) {
-                const now = new Date();
-                const label = now.toLocaleTimeString();
-
-                dataLogs[type].shift();
-                dataLogs[type].push(value);
-                dataLogs.timestamps.shift();
-                dataLogs.timestamps.push(label);
-
-                updateDisplays();
-            }
-
-            function updateDisplays() {
-                const bpm = dataLogs.bpm.at(-1);
-                const temp = dataLogs.temp.at(-1);
-                const hum = dataLogs.humidity.at(-1);
-                const label = dataLogs.timestamps.at(-1);
-
-                document.getElementById("heart-rate").textContent = `${bpm} bpm`;
-                document.getElementById("body-temp").textContent = `${temp.toFixed(1)} °C`;
-                document.getElementById("humidity").textContent = `${hum.toFixed(1)} %`;
-
-                bpmChart.data.labels = dataLogs.timestamps;
-                bpmChart.data.datasets[0].data = dataLogs.bpm;
-                bpmChart.update();
-
-                tempChart.data.labels = dataLogs.timestamps;
-                tempChart.data.datasets[0].data = dataLogs.temp;
-                tempChart.update();
-
-                humidityChart.data.labels = dataLogs.timestamps;
-                humidityChart.data.datasets[0].data = dataLogs.humidity;
-                humidityChart.update();
-            }
-
-            // ------------------- MAP + GPS -------------------
-            function updateGPSLocation(userId, lat, lng) {
-                const position = [lng, lat];
-                const userColor = userPolylines[userId]?.color || "#64FFDA";
-
-                gpsHistory.push({ lat, lng, timestamp: new Date(), user: userId });
-                if (gpsHistory.length > MAX_GPS_HISTORY) gpsHistory.shift();
-
-                // Update GPS location display
-                document.getElementById("gps-location").textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
-                if (marker) {
-                    marker.setLngLat(position);
-                } else {
-                    const el = document.createElement('div');
-                    el.className = 'user-marker';
-                    el.style.backgroundColor = userColor;
-                    el.style.width = '20px';
-                    el.style.height = '20px';
-                    el.style.borderRadius = '50%';
-                    el.style.border = '2px solid white';
-                    marker = new mapboxgl.Marker({ element: el }).setLngLat(position).addTo(map);
-                }
-
-                // Update the user's path
-                if (!userPolylines[userId]) {
-                    userPolylines[userId] = {
-                        color: userColor,
-                        data: {
-                            type: 'FeatureCollection',
-                            features: [{
-                                type: 'Feature',
-                                geometry: { 
-                                    type: 'LineString', 
-                                    coordinates: [position] 
-                                }
-                            }]
-                        }
-                    };
-                } else {
-                    userPolylines[userId].data.features[0].geometry.coordinates.push(position);
-                }
-
-                // Update or create the path on the map
-                const sourceId = `route-${userId}`;
-                if (map.getSource(sourceId)) {
-                    map.getSource(sourceId).setData(userPolylines[userId].data);
-                } else {
-                    map.addSource(sourceId, { 
-                        type: 'geojson', 
-                        data: userPolylines[userId].data 
-                    });
-                    map.addLayer({
-                        id: sourceId,
-                        type: 'line',
-                        source: sourceId,
-                        layout: { 'line-join': 'round', 'line-cap': 'round' },
-                        paint: {
-                            'line-color': userColor,
-                            'line-width': 3
-                        }
-                    });
-                }
-
-                map.flyTo({ center: position, essential: true });
-            }
-
-            function loadUserData(userId) {
-                if (!userId) return;
-                
-                currentUser = userId;
-                setupUserListeners(userId);
-
-                // Clear previous data
-                dataLogs.bpm = Array(30).fill(null);
-                dataLogs.temp = Array(30).fill(null);
-                dataLogs.humidity = Array(30).fill(null);
-                dataLogs.timestamps = Array(30).fill(null);
-                updateDisplays();
-
-                // Reset damage indicators
-                document.getElementById("left-upper-arm").className = "jacket-part left-upper-arm";
-                document.getElementById("left-lower-arm").className = "jacket-part left-lower-arm";
-                document.getElementById("right-upper-arm").className = "jacket-part right-upper-arm";
-                document.getElementById("right-lower-arm").className = "jacket-part right-lower-arm";
-                document.getElementById("left-arm-status").className = "status-value safe";
-                document.getElementById("left-arm-status").textContent = "Nominal";
-                document.getElementById("right-arm-status").className = "status-value safe";
-                document.getElementById("right-arm-status").textContent = "Nominal";
-                document.getElementById("tiltStatus").className = "sensor-status status-inactive";
-                document.getElementById("tiltStatus").textContent = "No";
-
-                // Update the user's initial location if available
-                const usersRef = firebase.database().ref(`employees/${userId}/sensor/gps`);
-                usersRef.once('value').then((snapshot) => {
-                    const gpsData = snapshot.val();
-                    if (gpsData?.latitude && gpsData?.longitude) {
-                        updateGPSLocation(userId, gpsData.latitude, gpsData.longitude);
-                    }
-                });
-            }
-
-            // ------------------- UI INTERACTIONS -------------------
-            document.getElementById("submitUserBtn").addEventListener("click", function () {
-                const userId = document.getElementById("userSelect").value;
-                loadUserData(userId);
-            });
-
-            document.getElementById("showMapBtn").addEventListener("click", function () {
-                const mapContainer = document.getElementById("mapContainer");
-                const historyPanel = document.getElementById("gpsHistoryPanel");
-
-                if (mapContainer.style.display === "none") {
-                    historyPanel.style.display = "none";
-                    mapContainer.style.display = "block";
-                    map.resize();
-                } else {
-                    mapContainer.style.display = "none";
-                }
-            });
-
-            document.getElementById("showHistoryBtn").addEventListener("click", function () {
-                const historyPanel = document.getElementById("gpsHistoryPanel");
-                const mapContainer = document.getElementById("mapContainer");
-
-                if (historyPanel.style.display === "none") {
-                    mapContainer.style.display = "none";
-                    historyPanel.style.display = "block";
-                    renderGpsHistory();
-                } else {
-                    historyPanel.style.display = "none";
-                }
-            });
-
-            document.getElementById("refreshBtn").addEventListener("click", function() {
-                if (currentUser) {
-                    loadUserData(currentUser);
-                }
-                loadAllUsers();
-            });
-
-            // ------------------- PDF EXPORT -------------------
-            document.getElementById("downloadBtn").addEventListener("click", function () {
-                html2canvas(document.querySelector(".dashboard")).then(canvas => {
-                    const imgData = canvas.toDataURL("image/png");
-                    const pdf = new jsPDF("landscape");
-                    const imgProps = pdf.getImageProperties(imgData);
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                    pdf.save("suit_dashboard.pdf");
-                });
-            });
-
-            // ------------------- GPS HISTORY -------------------
-            function renderGpsHistory() {
-                const historyPanel = document.getElementById("gpsHistoryPanel");
-                historyPanel.innerHTML = "<h4>GPS History</h4>";
-                
-                for (let i = gpsHistory.length - 1; i >= 0; i--) {
-                    const { lat, lng, timestamp, user } = gpsHistory[i];
-                    const entry = document.createElement("div");
-                    entry.className = "log-entry";
-                    entry.innerHTML = `
-                        <div><strong>${user}</strong></div>
-                        <div>${timestamp.toLocaleTimeString()}</div>
-                        <div>${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
-                    `;
-                    historyPanel.appendChild(entry);
-                }
-            }
+      map.on('load', () => {
+        map.addSource('mapbox-dem', {
+          type: 'raster-dem',
+          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+          tileSize: 512,
+          maxzoom: 14
         });
-    </script>
+        map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+        map.addLayer({
+          'id': 'sky',
+          'type': 'sky',
+          'paint': {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [0.0, 0.0],
+            'sky-atmosphere-sun-intensity': 15
+          }
+        });
+
+        // Initialize Firebase and load users
+        initializeFirebase();
+      });
+
+      // ------------------- FIREBASE -------------------
+      function initializeFirebase() {
+        const firebaseConfig = {
+          apiKey: "AIzaSyB24DNM3zDddY2hXr5RKByD64L8I_sx6Vc",
+          authDomain: "hev-iot-system.firebaseapp.com",
+          databaseURL: "https://hev-iot-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "hev-iot-system",
+          storageBucket: "hev-iot-system.firebasestorage.app",
+          messagingSenderId: "1003400309592",
+          appId: "1:1003400309592:web:0086a6d56c48f67ea6d32d",
+          measurementId: "G-VFMDHG8828"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Update connection status
+        document.getElementById("connectionStatus").style.backgroundColor = "#64ffda";
+        document.getElementById("connectionText").textContent = "Connected";
+
+        // Load all users from Firebase
+        loadAllUsers();
+      }
+
+      function loadAllUsers() {
+        const usersRef = firebase.database().ref('employees');
+        const userSelect = document.getElementById('userSelect');
+
+        usersRef.once('value').then((snapshot) => {
+          const users = snapshot.val();
+          userSelect.innerHTML = '<option value="">Select a user</option>';
+
+          if (users) {
+            let userIndex = 0;
+            Object.keys(users).forEach(userId => {
+              const option = document.createElement('option');
+              option.value = userId;
+              option.textContent = userId;
+              userSelect.appendChild(option);
+
+              // Assign a color to this user
+              if (!userPolylines[userId]) {
+                const color = userColors[userIndex % userColors.length];
+                userPolylines[userId] = {
+                  color: color,
+                  data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                      type: 'Feature',
+                      geometry: {
+                        type: 'LineString',
+                        coordinates: []
+                      }
+                    }]
+                  }
+                };
+                userIndex++;
+              }
+            });
+          } else {
+            userSelect.innerHTML = '<option value="">No users found</option>';
+          }
+        }).catch((error) => {
+          console.error("Error loading users:", error);
+          userSelect.innerHTML = '<option value="">Error loading users</option>';
+        });
+      }
+
+      function setupUserListeners(userId) {
+        if (suitRef) suitRef.off();
+        suitRef = firebase.database().ref(`employees/${userId}/sensor`);
+
+        suitRef.child("heartPulse").on("value", snapshot => {
+          const bpm = snapshot.val();
+          if (bpm !== null && !isNaN(bpm)) {
+            updateSensorData('bpm', bpm);
+            checkBPMAlerts(bpm);
+          }
+        });
+
+        suitRef.child("temperature").on("value", snapshot => {
+          const temp = snapshot.val();
+          if (temp !== null && !isNaN(temp)) {
+            updateSensorData('temp', temp);
+            checkTempAlerts(temp);
+          }
+        });
+
+        suitRef.child("humidity").on("value", snapshot => {
+          const humidity = snapshot.val();
+          if (humidity !== null && !isNaN(humidity)) updateSensorData('humidity', humidity);
+        });
+
+        suitRef.child("gps").on("value", snapshot => {
+          const gpsData = snapshot.val();
+          if (gpsData?.latitude && gpsData?.longitude) {
+            updateGPSLocation(userId, gpsData.latitude, gpsData.longitude);
+          }
+        });
+
+        // Listen for damage status updates
+        suitRef.child("Upper_Arm_L_Damaged").on("value", snapshot => {
+          const isDamaged = snapshot.val();
+          document.getElementById("left-upper-arm").className = `jacket-part left-upper-arm ${isDamaged ? 'damage-critical' : ''}`;
+          document.getElementById("left-arm-status").className = `status-value ${isDamaged ? 'critical' : 'safe'}`;
+          document.getElementById("left-arm-status").textContent = isDamaged ? "Damaged" : "Nominal";
+          if (isDamaged) {
+            alertSystem.addAlert(
+              'Left Arm Damage',
+              'Left upper arm component has been damaged. Immediate maintenance required.',
+              'danger',
+              true
+            );
+          }
+        });
+
+        suitRef.child("Lower_Arm_L_Damaged").on("value", snapshot => {
+          const isDamaged = snapshot.val();
+          document.getElementById("left-lower-arm").className = `jacket-part left-lower-arm ${isDamaged ? 'damage-critical' : ''}`;
+        });
+
+        suitRef.child("Upper_Arm_R_Damaged").on("value", snapshot => {
+          const isDamaged = snapshot.val();
+          document.getElementById("right-upper-arm").className = `jacket-part right-upper-arm ${isDamaged ? 'damage-critical' : ''}`;
+          document.getElementById("right-arm-status").className = `status-value ${isDamaged ? 'critical' : 'safe'}`;
+          document.getElementById("right-arm-status").textContent = isDamaged ? "Damaged" : "Nominal";
+          if (isDamaged) {
+            alertSystem.addAlert(
+              'Right Arm Damage',
+              'Right upper arm component has been damaged. Immediate maintenance required.',
+              'danger',
+              true
+            );
+          }
+        });
+
+        suitRef.child("Lower_Arm_R_Damaged").on("value", snapshot => {
+          const isDamaged = snapshot.val();
+          document.getElementById("right-lower-arm").className = `jacket-part right-lower-arm ${isDamaged ? 'damage-critical' : ''}`;
+        });
+
+        suitRef.child("tiltVal").on("value", snapshot => {
+          const isTilted = snapshot.val();
+          document.getElementById("tiltStatus").className = `sensor-status ${isTilted ? 'status-active' : 'status-inactive'}`;
+          document.getElementById("tiltStatus").textContent = isTilted ? "Yes" : "No";
+          if (isTilted) {
+            alertSystem.addAlert(
+              'Tilt Detected',
+              'The suit has been tilted significantly. Check if the wearer has fallen.',
+              'warning',
+              true
+            );
+          } else {
+            // If tilt returns to normal, remove the alert
+            alertSystem.removeAlert(null, 'Tilt Detected-The suit has been tilted significantly');
+          }
+        });
+
+        // Listen for connection status changes
+        firebase.database().ref('.info/connected').on('value', (snapshot) => {
+          if (snapshot.val() === true) {
+            document.getElementById("connectionStatus").className = 'status-dot';
+            document.getElementById("connectionText").textContent = 'Connected';
+            alertSystem.addAlert(
+              'Connection Restored',
+              'Connection to HEV Suit has been re-established.',
+              'success'
+            );
+          } else {
+            document.getElementById("connectionStatus").className = 'status-dot offline';
+            document.getElementById("connectionText").textContent = 'Disconnected';
+            alertSystem.addAlert(
+              'Connection Lost',
+              'Connection to HEV Suit has been lost. Attempting to reconnect...',
+              'danger',
+              true
+            );
+          }
+        });
+      }
+
+      // ------------------- CHARTS -------------------
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#ccd6f6" } },
+          y: { ticks: { color: "#ccd6f6" } }
+        },
+        elements: {
+          point: { radius: 0 },
+          line: { borderWidth: 2, tension: 0.3 }
+        }
+      };
+
+      const bpmChart = new Chart(document.getElementById("bpmChart"), {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "BPM", data: [], borderColor: "#ff5555" }] },
+        options: { ...chartOptions, scales: { y: { min: 50, max: 120 } } }
+      });
+
+      const tempChart = new Chart(document.getElementById("tempChart"), {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "Temp", data: [], borderColor: "#64ffda" }] },
+        options: { ...chartOptions, scales: { y: { min: 20, max: 40 } } }
+      });
+
+      const humidityChart = new Chart(document.getElementById("humidityChart"), {
+        type: "line",
+        data: { labels: [], datasets: [{ label: "Humidity", data: [], borderColor: "#1e88e5" }] },
+        options: { ...chartOptions, scales: { y: { min: 30, max: 80 } } }
+      });
+
+      // ------------------- SENSOR + CHARTS -------------------
+      function updateSensorData(type, value) {
+        const now = new Date();
+        const label = now.toLocaleTimeString();
+
+        dataLogs[type].shift();
+        dataLogs[type].push(value);
+        dataLogs.timestamps.shift();
+        dataLogs.timestamps.push(label);
+
+        updateDisplays();
+      }
+
+      function updateDisplays() {
+        const bpm = dataLogs.bpm.at(-1);
+        const temp = dataLogs.temp.at(-1);
+        const hum = dataLogs.humidity.at(-1);
+        const label = dataLogs.timestamps.at(-1);
+
+        document.getElementById("heartPulse").textContent = `${bpm} bpm`;
+        document.getElementById("body-temp").textContent = `${temp.toFixed(1)} °C`;
+        document.getElementById("humidity").textContent = `${hum.toFixed(1)} %`;
+
+        bpmChart.data.labels = dataLogs.timestamps;
+        bpmChart.data.datasets[0].data = dataLogs.bpm;
+        bpmChart.update();
+
+        tempChart.data.labels = dataLogs.timestamps;
+        tempChart.data.datasets[0].data = dataLogs.temp;
+        tempChart.update();
+
+        humidityChart.data.labels = dataLogs.timestamps;
+        humidityChart.data.datasets[0].data = dataLogs.humidity;
+        humidityChart.update();
+      }
+
+      // ------------------- MAP + GPS -------------------
+      function updateGPSLocation(userId, lat, lng) {
+        const position = [lng, lat];
+        const userColor = userPolylines[userId]?.color || "#64FFDA";
+
+        gpsHistory.push({ lat, lng, timestamp: new Date(), user: userId });
+        if (gpsHistory.length > MAX_GPS_HISTORY) gpsHistory.shift();
+
+        // Update GPS location display
+        document.getElementById("gps-location").textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+        if (marker) {
+          marker.setLngLat(position);
+        } else {
+          const el = document.createElement('div');
+          el.className = 'user-marker';
+          el.style.backgroundColor = userColor;
+          el.style.width = '20px';
+          el.style.height = '20px';
+          el.style.borderRadius = '50%';
+          el.style.border = '2px solid white';
+          marker = new mapboxgl.Marker({ element: el }).setLngLat(position).addTo(map);
+        }
+
+        // Update the user's path
+        if (!userPolylines[userId]) {
+          userPolylines[userId] = {
+            color: userColor,
+            data: {
+              type: 'FeatureCollection',
+              features: [{
+                type: 'Feature',
+                geometry: {
+                  type: 'LineString',
+                  coordinates: [position]
+                }
+              }]
+            }
+          };
+        } else {
+          userPolylines[userId].data.features[0].geometry.coordinates.push(position);
+        }
+
+        // Update or create the path on the map
+        const sourceId = `route-${userId}`;
+        if (map.getSource(sourceId)) {
+          map.getSource(sourceId).setData(userPolylines[userId].data);
+        } else {
+          map.addSource(sourceId, {
+            type: 'geojson',
+            data: userPolylines[userId].data
+          });
+          map.addLayer({
+            id: sourceId,
+            type: 'line',
+            source: sourceId,
+            layout: { 'line-join': 'round', 'line-cap': 'round' },
+            paint: {
+              'line-color': userColor,
+              'line-width': 3
+            }
+          });
+        }
+
+        map.flyTo({ center: position, essential: true });
+      }
+
+      function loadUserData(userId) {
+        if (!userId) return;
+
+        currentUser = userId;
+        setupUserListeners(userId);
+
+        // Clear previous data
+        dataLogs.bpm = Array(30).fill(null);
+        dataLogs.temp = Array(30).fill(null);
+        dataLogs.humidity = Array(30).fill(null);
+        dataLogs.timestamps = Array(30).fill(null);
+        updateDisplays();
+
+        // Reset damage indicators
+        document.getElementById("left-upper-arm").className = "jacket-part left-upper-arm";
+        document.getElementById("left-lower-arm").className = "jacket-part left-lower-arm";
+        document.getElementById("right-upper-arm").className = "jacket-part right-upper-arm";
+        document.getElementById("right-lower-arm").className = "jacket-part right-lower-arm";
+        document.getElementById("left-arm-status").className = "status-value safe";
+        document.getElementById("left-arm-status").textContent = "Nominal";
+        document.getElementById("right-arm-status").className = "status-value safe";
+        document.getElementById("right-arm-status").textContent = "Nominal";
+        document.getElementById("tiltStatus").className = "sensor-status status-inactive";
+        document.getElementById("tiltStatus").textContent = "No";
+
+        // Update the user's initial location if available
+        const usersRef = firebase.database().ref(`employees/${userId}/sensor/gps`);
+        usersRef.once('value').then((snapshot) => {
+          const gpsData = snapshot.val();
+          if (gpsData?.latitude && gpsData?.longitude) {
+            updateGPSLocation(userId, gpsData.latitude, gpsData.longitude);
+          }
+        });
+      }
+
+      // ------------------- UI INTERACTIONS -------------------
+      document.getElementById("submitUserBtn").addEventListener("click", function () {
+        const userId = document.getElementById("userSelect").value;
+        loadUserData(userId);
+      });
+
+      document.getElementById("showMapBtn").addEventListener("click", function () {
+        const mapContainer = document.getElementById("mapContainer");
+        const historyPanel = document.getElementById("gpsHistoryPanel");
+
+        if (mapContainer.style.display === "none") {
+          historyPanel.style.display = "none";
+          mapContainer.style.display = "block";
+          map.resize();
+        } else {
+          mapContainer.style.display = "none";
+        }
+      });
+
+      document.getElementById("showHistoryBtn").addEventListener("click", function () {
+        const historyPanel = document.getElementById("gpsHistoryPanel");
+        const mapContainer = document.getElementById("mapContainer");
+
+        if (historyPanel.style.display === "none") {
+          mapContainer.style.display = "none";
+          historyPanel.style.display = "block";
+          renderGpsHistory();
+        } else {
+          historyPanel.style.display = "none";
+        }
+      });
+
+      document.getElementById("fanStateBtn").addEventListener("click", function () {
+        // Create a modal dialog for fan control
+        const fanControlModal = document.createElement('div');
+        fanControlModal.style.position = 'fixed';
+        fanControlModal.style.top = '0';
+        fanControlModal.style.left = '0';
+        fanControlModal.style.width = '100%';
+        fanControlModal.style.height = '100%';
+        fanControlModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        fanControlModal.style.zIndex = '1000';
+        fanControlModal.style.display = 'flex';
+        fanControlModal.style.justifyContent = 'center';
+        fanControlModal.style.alignItems = 'center';
+
+        // Create the form container
+        const formContainer = document.createElement('div');
+        formContainer.style.backgroundColor = '#112240';
+        formContainer.style.padding = '2rem';
+        formContainer.style.borderRadius = '10px';
+        formContainer.style.border = '2px solid #64ffda';
+        formContainer.style.width = '400px';
+        formContainer.style.maxWidth = '90%';
+
+        // Add the form HTML
+        formContainer.innerHTML = `
+    <h2 style="color: #64ffda; margin-bottom: 1.5rem; font-family: 'Orbitron', sans-serif;">Fan Control Panel</h2>
+    
+    <form id="useridForm" style="margin-bottom: 2rem;">
+      <h3 style="color: #ccd6f6; margin-bottom: 1rem;">Submit User ID to ESP8266</h3>
+      <div style="margin-bottom: 1rem;">
+        <label for="userid" style="display: block; color: #ccd6f6; margin-bottom: 0.5rem;">User ID:</label>
+        <input type="text" id="userid" name="userid" required 
+               style="width: 100%; padding: 0.75rem; background-color: #233554; 
+               border: 1px solid #64ffda; border-radius: 5px; color: #e6f1ff;">
+      </div>
+      <button type="submit" 
+              style="background-color: #64ffda; color: #0a192f; border: none; 
+              padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; 
+              font-weight: bold; width: 100%;">
+        Submit User ID
+      </button>
+    </form>
+    
+    <form id="clearIdForm" style="margin-bottom: 2rem;">
+      <h3 style="color: #ccd6f6; margin-bottom: 1rem;">Clear Employee ID</h3>
+      <button type="submit" 
+              style="background-color: #ff5555; color: white; border: none; 
+              padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; 
+              font-weight: bold; width: 100%;">
+        Clear Employee ID
+      </button>
+    </form>
+    
+    <form id="fanControlForm">
+      <h3 style="color: #ccd6f6; margin-bottom: 1rem;">Fan State Control</h3>
+      <div style="margin-bottom: 1rem;">
+        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+          <input type="radio" id="on" name="state" value="on" 
+                 style="margin-right: 0.5rem;">
+          <label for="on" style="color: #ccd6f6;">On</label>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <input type="radio" id="off" name="state" value="off" 
+                 style="margin-right: 0.5rem;">
+          <label for="off" style="color: #ccd6f6;">Off</label>
+        </div>
+      </div>
+      <button type="submit" 
+              style="background-color: #64ffda; color: #0a192f; border: none; 
+              padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; 
+              font-weight: bold; width: 100%;">
+        Set Fan State
+      </button>
+    </form>
+    
+    <button id="closeModalBtn" 
+            style="background-color: transparent; color: #ff5555; border: 1px solid #ff5555; 
+            padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; 
+            font-weight: bold; width: 100%; margin-top: 1.5rem;">
+      Close
+    </button>
+  `;
+
+        // Append form to modal and modal to body
+        fanControlModal.appendChild(formContainer);
+        document.body.appendChild(fanControlModal);
+
+        // Handle form submissions
+        document.getElementById('useridForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          const userid = document.getElementById('userid').value;
+          fetch('http://192.168.131.198/submituserid', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `userid=${encodeURIComponent(userid)}`
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              alert('User ID submitted successfully!');
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Error submitting User ID');
+            });
+        });
+
+        document.getElementById('clearIdForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          fetch('http://192.168.131.198/clearid', {
+            method: 'GET'
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              alert('Employee ID cleared successfully!');
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Error clearing Employee ID');
+            });
+        });
+
+        document.getElementById('fanControlForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          const state = document.querySelector('input[name="state"]:checked')?.value;
+          if (!state) {
+            alert('Please select a fan state');
+            return;
+          }
+
+          fetch('http://192.168.131.198/setfan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `state=${encodeURIComponent(state)}`
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              alert(`Fan turned ${state} successfully!`);
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Error controlling fan');
+            });
+        });
+
+        // Close modal handler
+        document.getElementById('closeModalBtn').addEventListener('click', function () {
+          document.body.removeChild(fanControlModal);
+        });
+
+        // Close modal when clicking outside
+        fanControlModal.addEventListener('click', function (e) {
+          if (e.target === fanControlModal) {
+            document.body.removeChild(fanControlModal);
+          }
+        });
+      });
+
+      // ------------------- PDF EXPORT -------------------
+      document.getElementById("downloadBtn").addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+
+        // Create a new PDF instance
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm'
+        });
+
+        // Get the dashboard element
+        const dashboard = document.querySelector('.dashboard');
+
+        // Use html2canvas to capture the dashboard as an image
+        html2canvas(dashboard, {
+          scale: 2, // Higher quality
+          logging: false,
+          useCORS: true,
+          allowTaint: true
+        }).then(canvas => {
+          // Convert canvas to image data
+          const imgData = canvas.toDataURL('image/png');
+
+          // Calculate dimensions to fit the PDF
+          const imgWidth = 280; // mm
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          // Add the image to the PDF
+          pdf.addImage(imgData, 'PNG', 5, 5, imgWidth, imgHeight);
+
+          // Save the PDF
+          pdf.save('HEV_Suit_Report.pdf');
+        }).catch(error => {
+          console.error('Error generating PDF:', error);
+          alert('Error generating PDF report. Please try again.');
+        });
+      });
+
+      // ------------------- GPS HISTORY -------------------
+      function renderGpsHistory() {
+        const historyPanel = document.getElementById("gpsHistoryPanel");
+        historyPanel.innerHTML = "<h4>GPS History</h4>";
+
+        for (let i = gpsHistory.length - 1; i >= 0; i--) {
+          const { lat, lng, timestamp, user } = gpsHistory[i];
+          const entry = document.createElement("div");
+          entry.className = "log-entry";
+          entry.innerHTML = `
+            <div><strong>${user}</strong></div>
+            <div>${timestamp.toLocaleTimeString()}</div>
+            <div>${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+          `;
+          historyPanel.appendChild(entry);
+        }
+      }
+
+      // Initialize the dashboard
+      initializeFirebase();
+    });
+  </script>
 </body>
 
 </html>

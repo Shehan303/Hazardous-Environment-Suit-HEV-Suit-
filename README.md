@@ -1,5 +1,7 @@
 # 🛡️ Hazardous-Environment-Suit (H.E.V. Suit) 🚧
 
+![Hev-suit](https://github.com/user-attachments/assets/3d878923-397c-43c5-9032-a868ea9eac78)
+
 ## 📋 Project Overview
 "**H.E.V. Suit**" is a **smart IoT-based protective suit** designed to **safeguard workers** operating in **hazardous environments** such as construction sites, mines, and disaster zones. 
 It continuously monitors **health conditions** and **environmental threats**, instantly alerting supervisors through a **cloud-connected mobile app**.
